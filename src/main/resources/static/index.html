@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Title</title>
+
+    <link rel="stylesheet" href="webjars/bootstrap/3.3.7-1/css/bootstrap.min.css"/>
+
+    <link rel="stylesheet" href="/lib/editormd/examples/css/style.css"/>
+    <link rel="stylesheet" href="/lib/editormd/css/editormd.css"/>
+    <link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon"/>
+    <style>
+        #custom-toc-container {
+            border: 1px solid #ddd;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: visible;
+        }
+
+        #custom-toc-container > .markdown-toc {
+            padding: 10px;
+        }
+    </style>
+
+    <script src="webjars/jquery/1.11.1/jquery.min.js"></script>
+    <script src="webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
+
+    <script src="webjars/angularjs/1.6.2/angular.min.js"></script>
+    <script src="/js/angularJS/app.js"></script>
+
+</head>
+<body>
+<div class="markdown-body editormd-preview-container" id="custom-toc-container">#custom-toc-container</div>
+<div id="test-editormd">
+<textarea>
+# ATG
+## BCC-test
+### 删所有工程 删锁
+table name: ATGPUB_ACRS.epub_project
+```sql
+begin
+     for rl in ( select * from epub_project) loop
+         -- Removing locks of the project if any
+         delete from avm_asset_lock where workspace_id in
+               (select id from avm_devline where name in
+               (select workspace from epub_project where project_id = rl.project_id));
+
+               -- delete history of the project
+               delete from EPUB_PR_HISTORY where project_id in
+        (select project_id from epub_project where project_id = rl.project_id);
+
+               -- delete the project
+               delete from epub_project where project_id = rl.project_id;
+
+               -- delete history of the process
+               delete from EPUB_PROC_HISTORY where process_id in
+               (select process_id from epub_process where project = rl.project_id);
+
+               -- delete task information of process
+               delete from EPUB_PROC_TASKINFO where id in
+               (select process_id from epub_process where project = rl.project_id);
+
+               -- delete states of project (if any)
+               delete  from EPUB_IND_WORKFLOW where process_id in
+               (select process_id from epub_process where project = rl.project_id);
+
+               -- finally delete the process
+               delete from epub_process where project = rl.project_id;
+
+        commit;
+     end loop;
+end ;
+```
+
+## BCC 删单个工程 删锁
+根据project名称，查找待删的project id:
+```sql
+select * from ATGPUB_ACRS.epub_project where displayName='XXXXXXX'
+```
+记下id,逐个替换并删除：
+```sql
+ -- Removing locks of the project if any
+delete from ATGPUB_ACRS.avm_asset_lock where workspace_id in
+      (select id from ATGPUB_ACRS.avm_devline where name in
+      (select workspace from ATGPUB_ACRS.epub_project where project_id = 'prj223000'));
+
+      -- delete history of the project
+      delete from ATGPUB_ACRS.EPUB_PR_HISTORY where project_id in
+(select project_id from ATGPUB_ACRS.epub_project where project_id = 'prj223000');
+
+      -- delete the project
+      delete from ATGPUB_ACRS.epub_project where project_id = 'prj223000';
+
+      -- delete history of the process
+      delete from ATGPUB_ACRS.EPUB_PROC_HISTORY where process_id in
+      (select process_id from ATGPUB_ACRS.epub_process where project = 'prj223000');
+
+      -- delete task information of process
+      delete from ATGPUB_ACRS.EPUB_PROC_TASKINFO where id in
+      (select process_id from ATGPUB_ACRS.epub_process where project = 'prj223000');
+
+      -- delete states of project (if any)
+      delete  from ATGPUB_ACRS.EPUB_IND_WORKFLOW where process_id in
+      (select process_id from ATGPUB_ACRS.epub_process where project = 'prj223000');
+
+      -- finally delete the process
+      delete from ATGPUB_ACRS.epub_process where project = 'prj223000';
+```
+
+### 删除所有project
+```sql
+delete from ATGPUB_ACRS.EPUB_PROJECT;
+delete from ATGPUB_ACRS.EPUB_PR_TG_AP_TS;
+delete from ATGPUB_ACRS.EPUB_DEPLOYMENT;
+delete from ATGPUB_ACRS.EPUB_PR_TG_DP_TS;
+delete from ATGPUB_ACRS.EPUB_PROC_HISTORY;
+delete from ATGPUB_ACRS.EPUB_PR_TG_DP_ID;
+delete from ATGPUB_ACRS.EPUB_INT_PRJ_HIST;
+delete from ATGPUB_ACRS.EPUB_PROC_TASKINFO;
+delete from ATGPUB_ACRS.EPUB_WORKFLOW_STRS;
+delete from ATGPUB_ACRS.EPUB_IND_WORKFLOW;
+delete from ATGPUB_ACRS.EPUB_PROCESS;
+delete from ATGPUB_ACRS.EPUB_PR_HISTORY;
+delete from ATGPUB_ACRS.EPUB_PROC_HISTORY;
+delete from ATGPUB_ACRS.avm_asset_lock;
+Delete from ATGPUB_ACRS.epub_deployment
+```
+
+
+### 如果遇到BCC发布工程一直位于队列中Queued就是卡起不动, 需要init一下snapshot
+[dyadmin](http://localhost:8180/dyn/admin/nucleus/atg/epub/DeploymentServer/)
+
+在bcc agent projects列，找到已经发布的历史project，然后找到最新成功的一个，右侧记下snapshot号，在上面dyadmin输入，init一下就好了
+
+## Fulfillment
+### 清空所有JMS
+[详见](/home/terrencewei/develop/doc/ATG11.1/E52191_03/Platform.11-1/ATGPlatformProgGuide/html/s1206removingsqljmsdestinationsandsub01.html)
+
+```sql
+--Remove queue:
+DELETE FROM ATGCORE_ACRS.dms_msg_properties
+WHERE msg_id IN (SELECT msg_id
+	FROM ATGCORE_ACRS.dms_queue_entry
+	WHERE queue_id IN (SELECT queue_id
+		FROM ATGCORE_ACRS.dms_queue
+		WHERE queue_name LIKE 'Fulfillment%'));
+DELETE FROM ATGCORE_ACRS.dms_msg
+WHERE msg_id IN (SELECT msg_id
+	FROM ATGCORE_ACRS.dms_queue_entry
+	WHERE queue_id IN (SELECT queue_id
+		FROM ATGCORE_ACRS.dms_queue
+		WHERE queue_name LIKE 'Fulfillment%'));
+DELETE FROM ATGCORE_ACRS.dms_queue_entry
+WHERE queue_id IN (SELECT queue_id
+	FROM ATGCORE_ACRS.dms_queue
+	WHERE queue_name LIKE 'Fulfillment%');
+DELETE FROM ATGCORE_ACRS.dms_queue
+WHERE queue_name LIKE 'Fulfillment%';
+
+--Remove topic:
+DELETE FROM ATGCORE_ACRS.dms_msg_properties
+WHERE msg_id IN (SELECT msg_id
+	FROM ATGCORE_ACRS.dms_topic_entry
+	WHERE subscriber_id IN (SELECT subscriber_id
+		FROM ATGCORE_ACRS.dms_topic_sub
+		WHERE topic_id IN (SELECT topic_id
+			FROM ATGCORE_ACRS.dms_topic
+			WHERE topic_name LIKE 'Fulfillment%')));
+DELETE FROM ATGCORE_ACRS.dms_msg
+WHERE msg_id IN (SELECT msg_id
+	FROM ATGCORE_ACRS.dms_topic_entry
+	WHERE subscriber_id IN (SELECT subscriber_id
+		FROM ATGCORE_ACRS.dms_topic_sub
+		WHERE topic_id IN (SELECT topic_id
+			FROM ATGCORE_ACRS.dms_topic
+			WHERE topic_name LIKE 'Fulfillment%')));
+DELETE FROM ATGCORE_ACRS.dms_topic_entry
+WHERE subscriber_id IN (SELECT subscriber_id
+	FROM ATGCORE_ACRS.dms_topic_sub
+	WHERE topic_id IN (SELECT topic_id
+		FROM ATGCORE_ACRS.dms_topic
+		WHERE topic_name LIKE 'Fulfillment%'));
+DELETE FROM ATGCORE_ACRS.dms_topic_sub
+WHERE topic_id IN (SELECT topic_id
+	FROM ATGCORE_ACRS.dms_topic
+	WHERE topic_name LIKE 'Fulfillment%');
+DELETE FROM ATGCORE_ACRS.dms_topic
+WHERE topic_name LIKE 'Fulfillment%';
+
+```
+
+## RQL
+### 只返回结果集中前几条结果
+```xml
+range+XXXX
+```
+比如，查询所有sku, 只返回前5条结果，用：
+```xml
+<query-items item-descriptor="sku">
+all range+5
+</query-items>
+```
+
+### properties文件中长字符串有逗号的情况
+[详见](http://betweengo.com/2006/10/11/atg-does-not-allow-property-values-with-commas-for-string-properties/)
+
+ATG does not allow property values with commas for String[] properties
+Posted on October 11, 2006
+Typically when you have a property of Strings, either an array or a collection, you would set them like this:
+
+foos=hello,good-bye,this is a test
+
+In the above example if the foos property is of type String [], then ATG initializes foos to { “hello”, “good-bye”, “this is a test” }.
+
+However if one of the String’s has a comma in it then this method won’t work because ATG will treat the comma as a delimiter. For example if foos is configured like this:
+
+foos=hello,good-bye,this is a test\, a big test
+
+then foos is initialized to { “hello”, “good-bye”, “this is a test”, “a big test” }
+
+To get around this apparent limitation, which is documented in Bug #29380, ATG provides a class called atg.core.util.StringList. If you set the type of the foos property to StringList and configure it like this:
+
+foos=hello,good-bye,this is a test,, a big test
+
+then fools will be initialized to { “hello”, “good-bye”, “this is a test, a big test” }. Note that “,,” is the method for escaping commas when using StringList.
+
+## Repository
+### atg.repository.MutableRepository
+对应某一个Repository
+操作item的CRUD:
+* C: createItem()->得到transient的item->item.setPropertyValue()->addItem()持久化
+* U: getItemForUpdate()->得到transient的item->item.setPropertyValue()->updateItem()持久化
+* D: removeItem()直接持久化的删除一个item
+
+## dsp标签
+### dsp form相关
+* dsp input的class="hidden" 则该handle方法不会被触发
+* dsp input的type="hidden" 如果不设置value=""的话则hanlde方法不会被触发而且页面初始化的时候就会报错说没有getter和setter在handle方法里
+
+## 使一个session无效
+参考BCNewSessionFilter.java
+atg.servlet.ServletUtil#invalidateSessionsAndSessionNameContexts
+
+```java
+package com.beacon.filter;
+
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import atg.servlet.ServletUtil;
+
+/**
+ * Change session when login
+ * @author: peteryue
+ * @version: 1.0, Apr 12, 2017
+ */
+public class BCNewSessionFilter implements Filter {
+
+    private FilterConfig mFilterConfig;
+
+
+
+    @Override
+    public void init(FilterConfig pFilterConfig) throws ServletException {
+        setFilterConfig(pFilterConfig);
+    }
+
+
+
+    @Override
+    public void doFilter(ServletRequest pServletRequest, ServletResponse pServletResponse, FilterChain pFilterChain)
+            throws IOException, ServletException {
+        ServletContext ctx = getFilterConfig().getServletContext();
+        HttpServletRequest httpRequest = (HttpServletRequest) pServletRequest;
+        if ("post".equals(httpRequest.getMethod().toLowerCase()) && httpRequest.getRequestURI().contains("/register")
+                && httpRequest.getParameter("/atg/userprofiling/ProfileFormHandler.login") != null) {
+            HttpSession session = httpRequest.getSession(false);
+            if (session != null) {
+                ServletUtil.invalidateSessionsAndSessionNameContexts(httpRequest, session, true);
+                ctx.log("BCNewSessionFilter invalite session for login");
+            }
+        }
+        pFilterChain.doFilter(pServletRequest, pServletResponse);
+    }
+
+
+
+    @Override
+    public void destroy() {
+        setFilterConfig(null);
+    }
+
+
+
+    public FilterConfig getFilterConfig() {
+        return mFilterConfig;
+    }
+
+
+
+    public void setFilterConfig(FilterConfig pFilterConfig) {
+        mFilterConfig = pFilterConfig;
+    }
+
+}
+```
+</textarea>
+</div>
+
+<script src="/lib/editormd/editormd.js"></script>
+<script src="/js/index.js"></script>
+
+</body>
+
+</html>

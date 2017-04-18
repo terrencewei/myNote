@@ -33,12 +33,15 @@ public class QiniuUtilsTest {
 
         QiniuUtils.QiniuPutResult result = mQiniuUtils.uploadFile2Cloud(uploadFilePath, objectKey);
 
-        System.out.println("upload finished:");
+        System.out.println("upload result: ");
         System.out.println("-------------------------");
         System.out.println("key: " + result.key);
         System.out.println("hash: " + result.hash);
         System.out.println("bucket: " + result.bucket);
-        System.out.println("file size: " + (result.fileSize) / 1024 + " KB");
+        long fileSise = (result.fileSize) / 1024;
+        boolean showFileSizeAsKB = fileSise >= 1l;
+        System.out.println("file size: " + (showFileSizeAsKB ? fileSise : result.fileSize)
+                + (showFileSizeAsKB ? " KB" : " bytes"));
         System.out.println("");
         System.out.println("file download url: " + mQiniuUtils.downloadFileFromCloud(objectKey));
     }
