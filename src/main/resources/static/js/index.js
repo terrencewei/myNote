@@ -40,17 +40,21 @@ $(function () {
 			}
 		},
 		onload: function () {
+
+			$("#custom-toc-container").before('<h1>目录</h1>');
+
 			function setBootstrapCollapse(levelClass) {
 				var levelSize = $("." + levelClass).size();
 				$.each($("." + levelClass), function (index, level) {
 					var collapseTargetClassName = levelClass + "-collapse-" + (index + 1);
 					// <a> link
 					$(level)
+						.addClass("toc-menu-title-content")
 						.wrap("<div class='toc-menu-title'></div>");
 					// <a> link's parent <div>
 					if ($(level).parent().siblings("ul").size() > 0) {
 						$(level).parent()
-							.append('<i class="pull-right fa fa-angle-down" style="padding-top: 4px;"></i>');
+							.append('<i class="toc-menu-title-btn pull-right fa fa-lg fa-arrow-circle-down"></i>');
 					}
 					// <a> link's siblings <i>
 					$(level).parent().children("i")
