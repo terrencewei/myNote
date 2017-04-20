@@ -1,0 +1,84 @@
+#myEditormdTocSidebar {
+    width: 20% !important;
+    height: 100% !important;
+    position: fixed;
+    top: 0;
+    right: 0;
+    overflow: scroll;
+    background: #fff;
+    z-index: 100;
+    padding: 18px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-bottom: none;
+}
+
+#myEditormdTocSidebar h1 {
+    font-size: 16px;
+}
+
+#myEditormdTocSidebar ul {
+    list-style-type: none
+}
+
+#myEditormdTocSidebar .toc-menu-body {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+
+#myEditormdTocSidebar .toc-menu-title:first-child {
+    border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;
+}
+
+#myEditormdTocSidebar .toc-menu-title {
+    padding: 1px;
+    margin-bottom: 0;
+    background-color: #f7f7f9;
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+}
+
+#myEditormdTocSidebar .toc-menu-title-content {
+    color: #000;
+}
+
+#myEditormdTocSidebar .toc-menu-title-btn {
+    padding: 5px 0 0 5px;
+    margin-bottom: 0;
+    transition: all 0.4s ease;
+}
+
+#myEditormdTocSidebar .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+    border: 1px solid #cccccc;
+    background: #444359;
+    font-weight: normal;
+    color: #2b2b2b;
+}
+
+#myEditormdTocSidebar .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus, .ui-button:hover, .ui-button:focus {
+    border: 1px solid #cccccc;
+    background: #b63b4d;
+    font-weight: normal;
+    color: #2b2b2b;
+}
+
+#myEditormdTocSidebar .toc-menu-title-toc-level-1 {
+    background-color: #f7f7f9;
+}
+
+#myEditormdTocSidebar .toc-menu-title-toc-level-2 {
+    background-color: #eee;
+}
+
+#myEditormdTocSidebar .toc-menu-title-toc-level-3 {
+    background-color: #ddd;
+}
+
+#myEditormdTocSidebar .toc-menu-title-toc-level-4 {
+    background-color: #ccc;
+}
+
+#myEditormdTocSidebar .toc-menu-title-toc-level-5 {
+    background-color: #999;
+}

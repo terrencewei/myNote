@@ -1,19 +1,102 @@
 $(function () {
 
-	var myEditormd = editormd("myEditormd", {
+	var myTocUtils = {
+		tocContainer: "#custom-toc-container",
+		tocMenuContainer: ".markdown-toc-list",
+		tocMenuTitleClass: "toc-menu-title",
+		tocMenuTitleButtonClass: "toc-menu-title-btn",
+		tocMenuTitleButtonInactiveClass: "fa-caret-down",
+		tocMenuTitleContentClass: "toc-menu-title-content",
+		tocMenuBodyClass: "toc-menu-body",
+		toBootstrapCollapse: function (levelClass) {
+			var $levelClass = $("." + levelClass);
+			var levelSize = $levelClass.size();
+			if (levelSize <= 0) {
+				return;
+			}
+			$.each($levelClass, function (index, level) {
+				var indexNum = (index + 1);
+				var collapseTargetClassName = levelClass + "-collapse-" + indexNum;
+				// <a> link
+				$(level)
+					.addClass(myTocUtils.tocMenuTitleContentClass)
+					.wrap("<div class=\"" + myTocUtils.tocMenuTitleClass + " " + myTocUtils.tocMenuTitleClass + "-" + levelClass + "\"></div>");
+				// <a> link's parent <div>
+				if ($(level).parent().siblings("ul").size() > 0) {
+					$(level).before("<i class=\"" + myTocUtils.tocMenuTitleButtonClass + " pull-left fa fa-lg " + myTocUtils.tocMenuTitleButtonInactiveClass + " \"></i>");
+				} else {
+					$(level).before("<i class='pull-left fa fa-lg fa-caret-right' style='padding: 5px 0 0 5px'></i>");
+				}
+				// <a> link's siblings <i>
+				// $(level).parent().children("i")
+				$(level).parent()
+					.attr("data-toggle", "collapse")
+					.attr("data-target", "." + collapseTargetClassName)
+					.attr("data-parent", myTocUtils.tocContainer);
+
+				// <a> link's parent <div>'s siblings <ul>
+				$(level).parent().siblings("ul").first()
+					.addClass(myTocUtils.tocMenuBodyClass)
+					.addClass(collapseTargetClassName)
+					.addClass("collapse");
+
+				// collapse menu show event
+				$("." + collapseTargetClassName).on('show.bs.collapse', function () {
+					// close any other collapse menu
+					for (var i = 1; i <= (levelSize + 1); i++) {
+						if (i == indexNum) {
+							continue;
+						}
+						$("." + levelClass + "-collapse-" + i).collapse("hide");
+					}
+					// change parent menu's icon
+					$(this).siblings("." + myTocUtils.tocMenuTitleClass).children("." + myTocUtils.tocMenuTitleButtonClass)
+						.css("transform", "rotate(180deg)")
+						.css("padding", "0 5px 5px 0");
+
+				});
+
+				// collapse menu hide event
+				$("." + collapseTargetClassName).on('hide.bs.collapse', function () {
+					// change parent menu's icon
+					$(this).siblings("." + myTocUtils.tocMenuTitleClass).children("." + myTocUtils.tocMenuTitleButtonClass)
+						.css("transform", "")
+						.css("padding", "5px 0 0 5px");
+				});
+			})
+		},
+		// this jquery ui method is useless for now
+		toJqueryuiCollapse: function (levelClass) {
+			$(myTocUtils.tocMenuContainer)
+				.accordion({
+					header: "> li > a",
+					collapsible: true,
+					heightStyle: "content",
+					icons: {
+						"header": "ui-icon-triangle-1-e",
+						"activeHeader": "ui-icon-triangle-1-s"
+					}
+				})
+		}
+	}
+
+	var myEditorUtils = {
+		editorContainerId: "myEditormd",
+		editormdLibPath: "/lib/editormd-1.5.0/lib/",
+		editormdDevExamplePath: "/lib/editormd-1.5.0/examples/index.html",
+	}
+
+	var myEditormd = editormd(myEditorUtils.editorContainerId, {
 		width: "90%",
 		height: 720,
-		path: "/lib/editormd-1.5.0/lib/",
+		path: myEditorUtils.editormdLibPath,
 		tocStartLevel: 1,
-		tocContainer: "#custom-toc-container",
+		tocContainer: myTocUtils.tocContainer,
 		tocDropdown: false,
 		tocTitle: "Table of Contents",
 		toolbar: true,
 		toolbarIcons: function () {
 			return ["upload", "|", "gotoDevExamples"];
-		},
-		toolbarCustomIcons: {
-			// toc: '<div class="markdown-body editormd-preview-container" id="custom-toc-container2"></div>'
 		},
 		toolbarIconsClass: {
 			gotoDevExamples: "fa-hand-o-right",  // FontAawsome class
@@ -33,7 +116,7 @@ $(function () {
 			 * @param {String}      selection  编辑器选中的文本
 			 */
 			gotoDevExamples: function (cm, icon, cursor, selection) {
-				window.open("/lib/editormd-1.5.0/examples/index.html");
+				window.open(myEditorUtils.editormdDevExamplePath);
 			},
 			upload: function (cm, icon, cursor, selection) {
 				//TODO:
@@ -41,67 +124,11 @@ $(function () {
 		},
 		onload: function () {
 
-			$("#custom-toc-container").before('<h1>目录</h1>');
+			$(myTocUtils.tocContainer).before('<h1>目录</h1>');
 
-			function setBootstrapCollapse(levelClass) {
-				var levelSize = $("." + levelClass).size();
-				$.each($("." + levelClass), function (index, level) {
-					var collapseTargetClassName = levelClass + "-collapse-" + (index + 1);
-					// <a> link
-					$(level)
-						.addClass("toc-menu-title-content")
-						.wrap("<div class='toc-menu-title'></div>");
-					// <a> link's parent <div>
-					if ($(level).parent().siblings("ul").size() > 0) {
-						$(level).parent()
-							.append('<i class="toc-menu-title-btn pull-right fa fa-lg fa-arrow-circle-down"></i>');
-					}
-					// <a> link's siblings <i>
-					$(level).parent().children("i")
-						.attr("data-toggle", "collapse")
-						.attr("data-target", "." + collapseTargetClassName)
-						.attr("data-parent", "#custom-toc-container")
-					// <a> link's parent <div>'s siblings <ul>
-					$(level).parent().siblings("ul").first()
-						.addClass("toc-menu-body")
-						.addClass(collapseTargetClassName)
-						.addClass("collapse");
-
-					// collapse show event
-					$("." + collapseTargetClassName).on('show.bs.collapse', function () {
-						for (var i = 1; i <= (levelSize + 1); i++) {
-							if (i == (index + 1)) {
-								continue;
-							}
-							$("." + levelClass + "-collapse-" + i).collapse("hide");
-						}
-					});
-				})
+			for (var i = 1; i <= 10; i++) {
+				myTocUtils.toBootstrapCollapse("toc-level-" + i);
 			}
-
-			function setJqueryUICollapse(levelClass) {
-				$("#custom-toc-container")
-					.accordion({
-						header: "." + levelClass
-					})
-					.sortable({
-						axis: "y",
-						handle: "." + levelClass,
-						stop: function (event, ui) {
-							// IE doesn't register the blur when sorting
-							// so trigger focusout handlers to remove .ui-state-focus
-							ui.item.children("." + levelClass).triggerHandler("focusout");
-
-							// Refresh accordion to handle new order
-							$(this).accordion("refresh");
-						}
-					});
-			}
-
-			// setJqueryUICollapse("toc-level-1");
-			setBootstrapCollapse("toc-level-1");
-			setBootstrapCollapse("toc-level-2");
-			setBootstrapCollapse("toc-level-3");
 		}
 	});
 
