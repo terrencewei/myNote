@@ -13,8 +13,8 @@ import com.qiniu.util.StringMap;
  */
 public class QiniuUtils {
 
-    private static final String    AK              = "fd8IoZ3gDj-pYFxQXlYUpPZY5ivud34TpD2jK1A9";
-    private static final String    SK              = "VEvosG0ZsbCL8MqIrGxnXHBp-J6fs4mzPjKTQW1i";
+    private static final String    AK              = "qJ0bpY5pwPjmTwQwVux531KB8Cx7Jf3i9YprI9am";
+    private static final String    SK              = "NFnitaih6q-tHaTIpseULWN1qt48OU8oQKg5jZei";
     private static final String    BUCKET_NAME     = "terrenceweimarkdown";
     private static final int       EXPIRE_SECOUNDS = 3600;
     private static final StringMap PUT_POLICY      = new StringMap().put("returnBody",

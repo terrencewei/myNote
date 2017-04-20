@@ -1,8 +1,74 @@
+.editormd-preview-close-btn {
+    top: inherit;
+    right: inherit;
+    margin-left: 14px;
+    margin-top: 6px;
+}
+
+#myEditormd {
+    width: 80% !important;
+    height: 100% !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #fff;
+    z-index: 100;
+    padding: 18px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-bottom: none;
+}
+
+#myEditormdTocSidebar {
+    width: 20% !important;
+    height: 100% !important;
+    position: fixed;
+    top: 0;
+    right: 0;
+    overflow: auto;
+    background: #fff;
+    z-index: 100;
+    padding: 18px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-bottom: none;
+}
+
+#myEditormdTocSidebar h1 {
+    font-size: 16px;
+}
+
+#myEditormdTocSidebar ul {
+    list-style-type: none
+}
+
+#myEditormdTocSidebar .toc-menu-body {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 auto;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+
+#myEditormdTocSidebar .toc-menu-title:first-child {
+    border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;
+}
+
+#myEditormdTocSidebar .toc-menu-title {
+    padding: .75rem 1.25rem;
+    margin-bottom: 0;
+    background-color: #f7f7f9;
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+}
+
 #custom-toc-container {
     width: 100%;
     margin: 0;
     padding: 0;
     overflow: visible;
+}
+
+#custom-toc-container .toc-container {
+    max-height: 200px;
 }
 
 #custom-toc-container .markdown-toc {
