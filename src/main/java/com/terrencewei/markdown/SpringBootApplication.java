@@ -1,4 +1,4 @@
-package com.terrencewei.markdown.service;
+package com.terrencewei.markdown;
 
 
 import org.springframework.boot.SpringApplication;
@@ -9,7 +9,7 @@ import org.springframework.boot.SpringApplication;
  * @SpringBootApplication包含@Configuration、@EnableAutoConfiguration、@ComponentScan
  * 
  * 用于主类, 会自动扫描此文件下属的所有包中的其他Spring注解
- * 即:自动扫描SpringApplication.java所在的package com.terrencewei.*
+ * 即:自动扫描SpringApplication.java所在的package com.terrencewei.markdown.*
  *
  * @Service用于标注业务层组件
  * @Controller用于标注控制层组件（如struts中的action）

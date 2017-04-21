@@ -34,13 +34,13 @@ public class QiniuUtils {
      * @param filePath
      * @return
      */
-    public String downloadFileFromCloud(String filePath) {
+    public static String downloadFileFromCloud(String filePath) {
         return Auth.create(AK, SK).privateDownloadUrl("http://ooj9mze8t.bkt.clouddn.com/" + filePath);
     }
 
 
 
-    public QiniuPutResult uploadFile2Cloud(String filePath, String objectKey) {
+    public static QiniuPutResult uploadFile2Cloud(String filePath, String objectKey) {
         // 构造一个带指定Zone对象的配置类
         /**
          * 其中关于Zone对象和机房的关系如下： 华东 Zone.zone0() 华北 Zone.zone1() 华南 Zone.zone2()
