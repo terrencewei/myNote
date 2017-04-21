@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.terrencewei.markdown.bean.OSSObject;
-import com.terrencewei.markdown.service.impl.OSSServiceImpl;
+import com.terrencewei.markdown.service.OSSService;
+import com.terrencewei.markdown.util.StringUtils;
 
 /**
  * Created by terrencewei on 2017/04/21.
@@ -18,15 +19,16 @@ import com.terrencewei.markdown.service.impl.OSSServiceImpl;
 public class OSSController {
 
     @Autowired
-    private OSSServiceImpl mOSSServiceImpl;
+    private OSSService mOSSService;
 
 
 
     @PostMapping("/save")
     @ResponseBody
     public boolean handleBlogList(@RequestBody OSSObject pOSSObject) {
-        // TODO:
-        System.out.println(pOSSObject);
+        if (pOSSObject != null && StringUtils.isNotBlank(pOSSObject.getKey()) && pOSSObject.getData() != null) {
+            return mOSSService.save2OSS(pOSSObject);
+        }
         return false;
     }
 

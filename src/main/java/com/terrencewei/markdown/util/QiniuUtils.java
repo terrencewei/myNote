@@ -1,5 +1,8 @@
 package com.terrencewei.markdown.util;
 
+import java.io.File;
+import java.io.InputStream;
+
 import com.qiniu.common.QiniuException;
 import com.qiniu.common.Zone;
 import com.qiniu.http.Response;
@@ -19,6 +22,10 @@ public class QiniuUtils {
     private static final int       EXPIRE_SECOUNDS = 3600;
     private static final StringMap PUT_POLICY      = new StringMap().put("returnBody",
             "{\"key\":\"$(key)\",\"hash\":\"$(etag)\",\"bucket\":\"$(bucket)\",\"fileSize\":$(fsize)}");
+
+    public static enum UploadType {
+        filePath,
+    }
 
 
 
@@ -40,7 +47,7 @@ public class QiniuUtils {
 
 
 
-    public static QiniuPutResult uploadFile2Cloud(String filePath, String objectKey) {
+    public static QiniuPutResult uploadFile2Cloud(Object inputData, String objectKey) {
         // 构造一个带指定Zone对象的配置类
         /**
          * 其中关于Zone对象和机房的关系如下： 华东 Zone.zone0() 华北 Zone.zone1() 华南 Zone.zone2()
@@ -53,9 +60,20 @@ public class QiniuUtils {
         String key = objectKey;
         String upToken = generateUploadToken(BUCKET_NAME, AK, SK, objectKey);
         try {
-            Response response = uploadManager.put(filePath, key, upToken);
+            Response response = null;
+            if (inputData instanceof String) {
+                response = uploadManager.put((String) inputData, key, upToken);
+            } else if (inputData instanceof File) {
+                response = uploadManager.put((File) inputData, key, upToken);
+            } else if (inputData instanceof byte[]) {
+                response = uploadManager.put((byte[]) inputData, key, upToken);
+            } else if (inputData instanceof InputStream) {
+                response = uploadManager.put((InputStream) inputData, key, upToken, null, null);
+            } else {
+                System.err.println("Invalid input date type:" + inputData);
+            }
             // 解析上传成功的结果
-            return response.jsonToObject(QiniuPutResult.class);
+            return response != null ? response.jsonToObject(QiniuPutResult.class) : null;
         } catch (QiniuException ex) {
             Response r = ex.response;
             System.err.println(r.toString());
@@ -68,7 +86,7 @@ public class QiniuUtils {
         return null;
     }
 
-    class QiniuPutResult {
+    public class QiniuPutResult {
         public String key;
         public String hash;
         public String bucket;

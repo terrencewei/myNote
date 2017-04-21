@@ -22,13 +22,6 @@ public class OSSObject {
 
 
 
-    @Override
-    public String toString() {
-        return "OSSObject [" + "key=" + key + ", data=" + data + ']';
-    }
-
-
-
     public Object getData() {
         return data;
     }
@@ -37,5 +30,12 @@ public class OSSObject {
 
     public void setData(Object pData) {
         data = pData;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return "OSSObject [" + "key=" + key + ", data=" + data + ']';
     }
 }
