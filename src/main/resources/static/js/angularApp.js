@@ -139,7 +139,7 @@ var myApp = angular.module('myApp', [])
 				},
 				onload: function () {
 
-					$(myTocUtils.tocContainer).before('<h1>目录</h1>');
+					$(myTocUtils.tocContainer).before('<h1>Table of Contents</h1>');
 
 					for (var i = 1; i <= 10; i++) {
 						myTocUtils.toBootstrapCollapse("toc-level-" + i);

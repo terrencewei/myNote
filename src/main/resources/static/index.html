@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Title</title>
+
+    <!--jquery-->
+    <script src="/webjars/jquery/1.11.1/jquery.min.js"></script>
+
+    <!--jquery ui-->
+    <script src="/webjars/jquery-ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="/webjars/jquery-ui/1.12.1/jquery-ui.min.css"/>
+
+    <!--bootstrap-->
+    <script src="/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css"/>
+
+    <!--editor.md https://github.com/pandao/editor.md-->
+    <link rel="stylesheet" href="/lib/editormd-1.5.0/examples/css/style.css"/>
+    <link rel="stylesheet" href="/lib/editormd-1.5.0/css/editormd.css"/>
+    <link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon"/>
+
+    <!--angularJS-->
+    <script src="/webjars/angularjs/1.6.2/angular.min.js"></script>
+
+    <!--editor.md https://github.com/pandao/editor.md-->
+    <script src="/lib/editormd-1.5.0/editormd.js"></script>
+
+    <!--my own-->
+    <link rel="stylesheet" href="/css/index.css"/>
+    <link rel="stylesheet" href="/css/index-toc-sideBar.css"/>
+    <link rel="stylesheet" href="/css/index-toc.css"/>
+    <script src="/js/index.js"></script>
+    <script src="/js/angularApp.js"></script>
+
+</head>
+<body>
+<div id="myEditormdTocSidebar" ng-controller="editorController">
+    <div class="editormd-preview-container" id="custom-toc-container"></div>
+</div>
+<div id="myEditormd">
+<textarea>
+# title level 1-1
+content text level 1-1
+## title level 1-2
+content text level 1-2
+### title level 1-3
+content text level 1-3
+#### title level 1-4
+content text level 1-4
+##### title level 1-5
+content text level 1-5
+# title level 2-1
+content text level 2-1
+## title level 2-2
+content text level 2-2
+### title level 2-3
+content text level 2-3
+#### title level 2-4
+content text level 2-4
+##### title level 2-5
+content text level 2-5
+# title level 3-1
+content text level 3-1
+## title level 3-2
+content text level 3-2
+### title level 3-3
+content text level 3-3
+#### title level 3-4
+content text level 3-4
+##### title level 3-5
+content text level 3-5
+</textarea>
+</div>
+
+</body>
+
+</html>
