@@ -1,5 +1,6 @@
 package com.terrencewei.markdown.controller;
 
+import com.terrencewei.markdown.bean.OSSResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.terrencewei.markdown.bean.OSSObject;
+import com.terrencewei.markdown.bean.OSSRequest;
 import com.terrencewei.markdown.service.OSSService;
 import com.terrencewei.markdown.util.StringUtils;
 
@@ -25,11 +26,20 @@ public class OSSController {
 
     @PostMapping("/save")
     @ResponseBody
-    public boolean handleBlogList(@RequestBody OSSObject pOSSObject) {
-        if (pOSSObject != null && StringUtils.isNotBlank(pOSSObject.getKey()) && pOSSObject.getData() != null) {
-            return mOSSService.save2OSS(pOSSObject);
+    public OSSResponse save(@RequestBody OSSRequest pOSSObject) {
+        OSSResponse response = new OSSResponse();
+        if (pOSSObject != null && StringUtils.isNotBlank(pOSSObject.getObjKey()) && pOSSObject.getObjData() != null) {
+            response = mOSSService.save(pOSSObject);
         }
-        return false;
+        return response;
+    }
+
+
+
+    @PostMapping("/get")
+    @ResponseBody
+    public OSSResponse get() {
+        return mOSSService.getAll();
     }
 
 }

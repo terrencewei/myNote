@@ -3,6 +3,9 @@ package com.terrencewei.markdown.util;
 import java.io.File;
 import java.io.InputStream;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.qiniu.common.QiniuException;
 import com.qiniu.common.Zone;
 import com.qiniu.http.Response;
@@ -10,27 +13,25 @@ import com.qiniu.storage.Configuration;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
+import com.terrencewei.markdown.bean.OSSConfig;
 
 /**
  * Created by terrencewei on 2017/04/17.
  */
+@Component
 public class QiniuUtils {
 
-    private static final String    AK              = "qJ0bpY5pwPjmTwQwVux531KB8Cx7Jf3i9YprI9am";
-    private static final String    SK              = "NFnitaih6q-tHaTIpseULWN1qt48OU8oQKg5jZei";
-    private static final String    BUCKET_NAME     = "terrenceweimarkdown";
-    private static final int       EXPIRE_SECOUNDS = 3600;
-    private static final StringMap PUT_POLICY      = new StringMap().put("returnBody",
+    @Autowired
+    private OSSConfig              mOSSConfig;
+
+    private static final StringMap PUT_POLICY = new StringMap().put("returnBody",
             "{\"key\":\"$(key)\",\"hash\":\"$(etag)\",\"bucket\":\"$(bucket)\",\"fileSize\":$(fsize)}");
 
-    public static enum UploadType {
-        filePath,
-    }
 
 
-
-    private static String generateUploadToken(String bucket, String accessKey, String secretKey, String objectKey) {
-        return Auth.create(accessKey, secretKey).uploadToken(bucket, objectKey, EXPIRE_SECOUNDS, PUT_POLICY);
+    private String generateUploadToken(String bucket, String accessKey, String secretKey, String objectKey) {
+        return Auth.create(accessKey, secretKey).uploadToken(bucket, objectKey, mOSSConfig.getExpireSeconds(),
+                PUT_POLICY);
     }
 
 
@@ -41,13 +42,14 @@ public class QiniuUtils {
      * @param filePath
      * @return
      */
-    public static String downloadFileFromCloud(String filePath) {
-        return Auth.create(AK, SK).privateDownloadUrl("http://ooj9mze8t.bkt.clouddn.com/" + filePath);
+    public String downloadFileFromCloud(String filePath) {
+        return Auth.create(mOSSConfig.getAccessKey(), mOSSConfig.getSecureKey())
+                .privateDownloadUrl("http://ooj9mze8t.bkt.clouddn.com/" + filePath);
     }
 
 
 
-    public static QiniuPutResult uploadFile2Cloud(Object inputData, String objectKey) {
+    public QiniuPutResult uploadFile2Cloud(Object inputData, String objectKey) {
         // 构造一个带指定Zone对象的配置类
         /**
          * 其中关于Zone对象和机房的关系如下： 华东 Zone.zone0() 华北 Zone.zone1() 华南 Zone.zone2()
@@ -58,7 +60,8 @@ public class QiniuUtils {
         // 如果是Windows情况下，格式是 D:\\qiniu\\test.png
         // 默认不指定key的情况下，以文件内容的hash值作为文件名
         String key = objectKey;
-        String upToken = generateUploadToken(BUCKET_NAME, AK, SK, objectKey);
+        String upToken = generateUploadToken(mOSSConfig.getBucketName(), mOSSConfig.getAccessKey(),
+                mOSSConfig.getSecureKey(), objectKey);
         try {
             Response response = null;
             if (inputData instanceof String) {
@@ -91,6 +94,14 @@ public class QiniuUtils {
         public String hash;
         public String bucket;
         public long   fileSize;
+
+
+
+        @Override
+        public String toString() {
+            return "QiniuPutResult [" + "key=" + key + ", hash=" + hash + ", bucket=" + bucket + ", fileSize="
+                    + fileSize + ']';
+        }
     }
 
 }

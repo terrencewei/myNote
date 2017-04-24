@@ -2,8 +2,8 @@ var myApp = angular.module('myApp', [])
 	.config(function ($logProvider) {
 		$logProvider.debugEnabled(globalAppVar.config.angular.loggingDebug);
 	})
-	.controller('editorController', ['$scope', 'httpService',
-		function ($scope, httpService) {
+	.controller('editorController', ['$scope', 'httpService', '$log',
+		function ($scope, httpService, $log) {
 
 			var myTocUtils = {
 				tocContainer: "#custom-toc-container",
@@ -89,6 +89,51 @@ var myApp = angular.module('myApp', [])
 				editorContainerId: "myEditormd",
 				editormdLibPath: "/lib/editormd-1.5.0/lib/",
 				editormdDevExamplePath: "/lib/editormd-1.5.0/examples/index.html",
+				showOSSGetAllDialog: function (thisEditormd) {
+					var classPrefix = thisEditormd.classPrefix;
+					var editor = thisEditormd.editor;
+					var dialog = editor.children("." + classPrefix + "dialog-info");
+					var dialogMask = thisEditormd.mask;
+					var resetOSSGetAllDialogPosition = function () {
+						dialog.css({
+							top: ($(window).height() - dialog.height()) / 2 + "px",
+							left: ($(window).width() - dialog.width()) / 2 + "px"
+						});
+					};
+					$("html,body").css("overflow-x", "hidden");
+					thisEditormd.lockScreen(true);
+					dialogMask.css({
+						opacity: "0.3",
+						backgroundColor: "#000"
+					}).show();
+					if (dialog.length < 1) {
+						editor.append([
+							"<div class=\"" + classPrefix + "dialog " + classPrefix + "dialog-info\" style=\"\">",
+							"<div class=\"" + classPrefix + "dialog-container\">Loading...</div>",
+							"<a href=\"javascript:;\" class=\"fa fa-close " + classPrefix + "dialog-close\"></a>",
+							"</div>"
+						].join("\n"));
+
+						dialog = editor.children("." + classPrefix + "dialog-info");
+						dialog
+							.find("." + classPrefix + "dialog-close")
+							.bind(editormd.mouseOrTouch("click", "touchend"), function () {
+								$("html,body").css("overflow-x", "");
+								dialog.hide();
+								dialogMask.hide();
+								thisEditormd.lockScreen(false);
+							})
+							.css("border", (editormd.isIE8) ? "1px solid #ddd" : "")
+							.css("z-index", editormd.dialogZindex);
+					}
+					dialog.css("z-index", editormd.dialogZindex).show();
+					resetOSSGetAllDialogPosition();
+					$(window).resize(resetOSSGetAllDialogPosition);
+					return dialog;
+				},
+				updateOSSGetAllDialog: function (dialogContent, dialog, thisEditormd) {
+					dialog.find("." + thisEditormd.classPrefix + "dialog-container").html(dialogContent);
+				}
 			}
 
 			$scope.myEditormd = editormd(myEditorUtils.editorContainerId, {
@@ -101,16 +146,19 @@ var myApp = angular.module('myApp', [])
 				tocTitle: "Table of Contents",
 				toolbar: true,
 				toolbarIcons: function () {
-					return ["ossSave", "|", "gotoDevExamples"];
+					return ["ossSave", "ossGetAll", "|", "gotoDevExamples"];
 				},
 				toolbarIconsClass: {
-					gotoDevExamples: "fa-hand-o-right",  // FontAawsome class
-					ossSave: "fa-cloud-upload"
+					// FontAawsome class
+					gotoDevExamples: "fa-hand-o-right",
+					ossSave: "fa-cloud-upload",
+					ossGetAll: "fa-cloud-download"
 				},
 				lang: {
 					toolbar: {
 						gotoDevExamples: "查看Editor.md开发者示例",
-						ossSave: "保存到云端"
+						ossSave: "保存到云端",
+						ossGetAll: "从云端获取所有"
 					}
 				},
 				toolbarHandlers: {
@@ -125,15 +173,38 @@ var myApp = angular.module('myApp', [])
 					},
 					ossSave: function (cm, icon, cursor, selection) {
 						//TODO: file key should comes from OSS server
-						httpService.post("/oss/save", {"key": "test.md", "data": $scope.myEditormd.getMarkdown()},
+						httpService.post("/oss/save", {"objKey": "test.md", "objData": $scope.myEditormd.getMarkdown()},
 							function (response) {
-								console.log("oss save success!");
+								$log.info("oss save success!");
+								$log.info(response);
 							},
 							function (response) {
-								console.log("oss save error!");
+								$log.warn("oss save error!");
+								$log.warn(response);
 							},
 							function (response) {
-								console.log("oss save exception occurs!");
+								$log.error("oss save exception occurs!");
+								$log.error(response);
+							});
+					},
+					ossGetAll: function () {
+						var thisEditormd = this;
+						var dialog = myEditorUtils.showOSSGetAllDialog(thisEditormd);
+						// get all from oss
+						httpService.post("/oss/get", {"objKey": "test.md", "objData": $scope.myEditormd.getMarkdown()},
+							function (response) {
+								var dialogContent = "<h1>hello world!</h1>";
+								myEditorUtils.updateOSSGetAllDialog(dialogContent, dialog, thisEditormd);
+								$log.info("oss save success!");
+								$log.info(response);
+							},
+							function (response) {
+								$log.warn("oss save error!");
+								$log.warn(response);
+							},
+							function (response) {
+								$log.error("oss save exception occurs!");
+								$log.error(response);
 							});
 					}
 				},

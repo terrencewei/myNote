@@ -1,12 +1,17 @@
 package com.terrencewei.markdown.service;
 
-import com.terrencewei.markdown.bean.OSSObject;
+import com.terrencewei.markdown.bean.OSSRequest;
+import com.terrencewei.markdown.bean.OSSResponse;
 
 /**
  * Created by terrencewei on 4/21/17.
  */
 public interface OSSService {
 
-    public boolean save2OSS(OSSObject pOSSObject);
+    public OSSResponse save(OSSRequest pOSSRequest);
+
+
+
+    public OSSResponse getAll();
 
 }
