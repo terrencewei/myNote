@@ -14,6 +14,7 @@ public class OSSConfig {
     private String secureKey;
     private String bucketName;
     private int    expireSeconds;
+    private String downloadBaseUrl;
 
 
 
@@ -65,9 +66,21 @@ public class OSSConfig {
 
 
 
+    public String getDownloadBaseUrl() {
+        return downloadBaseUrl;
+    }
+
+
+
+    public void setDownloadBaseUrl(String pDownloadBaseUrl) {
+        downloadBaseUrl = pDownloadBaseUrl;
+    }
+
+
+
     @Override
     public String toString() {
         return "OSSConfig [" + "accessKey=" + accessKey + ", secureKey=" + secureKey + ", bucketName=" + bucketName
-                + ", expireSeconds=" + expireSeconds + ']';
+                + ", expireSeconds=" + expireSeconds + ", downloadBaseUrl=" + downloadBaseUrl + ']';
     }
 }

@@ -38,8 +38,12 @@ public class OSSController {
 
     @PostMapping("/get")
     @ResponseBody
-    public OSSResponse get() {
-        return mOSSService.getAll();
+    public OSSResponse get(@RequestBody OSSRequest pOSSObject) {
+        if (pOSSObject != null && StringUtils.isNotBlank(pOSSObject.getObjKey())) {
+            return mOSSService.get(pOSSObject);
+        } else {
+            return mOSSService.getAll();
+        }
     }
 
 }

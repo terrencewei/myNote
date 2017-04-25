@@ -1,10 +1,3 @@
-.editormd-preview-close-btn {
-    top: inherit;
-    right: inherit;
-    margin-left: 14px;
-    margin-top: 6px;
-}
-
 #myEditormd {
     width: 80% !important;
     height: 100% !important;
@@ -17,4 +10,19 @@
     border: 1px solid #ddd;
     border-top: none;
     border-bottom: none;
+}
+
+#myEditormd .editormd-preview-close-btn {
+    top: inherit;
+    right: inherit;
+    margin-left: 14px;
+    margin-top: 6px;
+}
+
+#myEditormd .editormd-dialog-container {
+    padding: 0;
+}
+
+#myEditormd .editormd-dialog-container .list-group {
+    margin-bottom: 0;
 }

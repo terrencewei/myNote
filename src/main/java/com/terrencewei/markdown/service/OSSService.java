@@ -12,6 +12,10 @@ public interface OSSService {
 
 
 
+    public OSSResponse get(OSSRequest pOSSRequest);
+
+
+
     public OSSResponse getAll();
 
 }

@@ -132,7 +132,7 @@ var myApp = angular.module('myApp', [])
 					return dialog;
 				},
 				updateOSSGetAllDialog: function (dialogContent, dialog, thisEditormd) {
-					dialog.find("." + thisEditormd.classPrefix + "dialog-container").html(dialogContent);
+					dialog.find("." + thisEditormd.classPrefix + "dialog-container").text("").append(dialogContent);
 				}
 			}
 
@@ -191,12 +191,38 @@ var myApp = angular.module('myApp', [])
 						var thisEditormd = this;
 						var dialog = myEditorUtils.showOSSGetAllDialog(thisEditormd);
 						// get all from oss
-						httpService.post("/oss/get", {"objKey": "test.md", "objData": $scope.myEditormd.getMarkdown()},
+						httpService.post("/oss/get", {},
 							function (response) {
-								var dialogContent = "<h1>hello world!</h1>";
-								myEditorUtils.updateOSSGetAllDialog(dialogContent, dialog, thisEditormd);
-								$log.info("oss save success!");
-								$log.info(response);
+								if (response.data.success) {
+									var $dialogContent = $("<div>").addClass("list-group");
+									var $dialogTitle = $("<a>").addClass("list-group-item").addClass("active").text("Click a file to edit");
+									$dialogContent.append($dialogTitle);
+									$.each(response.data.responseData.results, function (index, result) {
+										$dialogTitle = $("<a>").addClass("list-group-item").text(result.key);
+										$dialogTitle.on("click", function () {
+											myEditorUtils.ossGet(result.key);
+										});
+										$dialogContent.append($dialogTitle);
+									});
+									myEditorUtils.updateOSSGetAllDialog($dialogContent, dialog, thisEditormd);
+								}
+							},
+							function (response) {
+								$log.warn("oss save error!");
+								$log.warn(response);
+							},
+							function (response) {
+								$log.error("oss save exception occurs!");
+								$log.error(response);
+							});
+					},
+					ossGet: function (objKey) {
+						httpService.post("/oss/get/" + $(this).text(), {},
+							function (response) {
+								if (response.data.success) {
+									var result = response.data.responseData.result;
+									$scope.myEditormd.cm.setValue()
+								}
 							},
 							function (response) {
 								$log.warn("oss save error!");
