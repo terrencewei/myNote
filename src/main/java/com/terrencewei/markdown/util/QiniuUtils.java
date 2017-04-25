@@ -33,12 +33,6 @@ public class QiniuUtils {
 
 
 
-    /**
-     * for private resource
-     * 
-     * @param filePath
-     * @return
-     */
     public String downloadFileFromCloud(String objKey) {
         return Auth.create(mOSSConfig.getAccessKey(), mOSSConfig.getSecureKey())
                 .privateDownloadUrl(mOSSConfig.getDownloadBaseUrl() + "/" + objKey);
