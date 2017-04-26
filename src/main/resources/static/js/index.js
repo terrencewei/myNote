@@ -5,6 +5,6 @@ globalAppVar.apiUrl = {};
 globalAppVar.constant = {};
 globalAppVar.config = {
 	angular: {
-		loggingDebug: false,
+		loggingDebug: true,
 	}
 };

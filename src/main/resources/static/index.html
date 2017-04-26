@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="myApp">
+<html lang="en" ng-app="myApp" ng-controller="editorController">
 <head>
     <meta charset="UTF-8"/>
     <title>Title</title>
@@ -35,7 +35,8 @@
 
 </head>
 <body>
-<div id="myEditormdTocSidebar" ng-controller="editorController">
+<div class="msgTips">" {{ msg.fileKey }} " 已保存到云端 ({{ msg.fileSize }})</div>
+<div id="myEditormdTocSidebar">
     <div class="editormd-preview-container" id="custom-toc-container"></div>
 </div>
 <div id="myEditormd">

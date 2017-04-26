@@ -2,8 +2,15 @@ var myApp = angular.module('myApp', [])
 	.config(function ($logProvider) {
 		$logProvider.debugEnabled(globalAppVar.config.angular.loggingDebug);
 	})
-	.controller('editorController', ['$scope', 'httpService', '$log',
-		function ($scope, httpService, $log) {
+	.controller('editorController', ['$scope', 'httpService', 'ossService', '$log',
+		function ($scope, httpService, ossService, $log) {
+
+			// $scope obj definition
+			$scope.msg = {};
+			$scope.myEditormd = {};
+
+			// init logic
+			$(".msgTips").hide();
 
 			var myTocUtils = {
 				tocContainer: "#custom-toc-container",
@@ -94,12 +101,6 @@ var myApp = angular.module('myApp', [])
 					var editor = thisEditormd.editor;
 					var dialog = editor.children("." + classPrefix + "dialog-info");
 					var dialogMask = thisEditormd.mask;
-					var resetOSSGetAllDialogPosition = function () {
-						dialog.css({
-							top: ($(window).height() - dialog.height()) / 2 + "px",
-							left: ($(window).width() - dialog.width()) / 2 + "px"
-						});
-					};
 					$("html,body").css("overflow-x", "hidden");
 					thisEditormd.lockScreen(true);
 					dialogMask.css({
@@ -127,12 +128,19 @@ var myApp = angular.module('myApp', [])
 							.css("z-index", editormd.dialogZindex);
 					}
 					dialog.css("z-index", editormd.dialogZindex).show();
-					resetOSSGetAllDialogPosition();
-					$(window).resize(resetOSSGetAllDialogPosition);
+					myEditorUtils.resetOSSGetAllDialogPosition(dialog);
+					$(window).resize(myEditorUtils.resetOSSGetAllDialogPosition(dialog));
 					return dialog;
 				},
 				updateOSSGetAllDialog: function (dialogContent, dialog, thisEditormd) {
 					dialog.find("." + thisEditormd.classPrefix + "dialog-container").text("").append(dialogContent);
+					myEditorUtils.resetOSSGetAllDialogPosition(dialog);
+				},
+				resetOSSGetAllDialogPosition: function (dialog) {
+					dialog.css({
+						top: ($(window).height() - dialog.height()) / 2 + "px",
+						left: ($(window).width() - dialog.width()) / 2 + "px"
+					});
 				}
 			}
 
@@ -173,19 +181,7 @@ var myApp = angular.module('myApp', [])
 					},
 					ossSave: function (cm, icon, cursor, selection) {
 						//TODO: file key should comes from OSS server
-						httpService.post("/oss/save", {"objKey": "test.md", "objData": $scope.myEditormd.getMarkdown()},
-							function (response) {
-								$log.info("oss save success!");
-								$log.info(response);
-							},
-							function (response) {
-								$log.warn("oss save error!");
-								$log.warn(response);
-							},
-							function (response) {
-								$log.error("oss save exception occurs!");
-								$log.error(response);
-							});
+						ossService.save($scope, "test.md", $scope.myEditormd.getMarkdown());
 					},
 					ossGetAll: function () {
 						var thisEditormd = this;
@@ -208,12 +204,12 @@ var myApp = angular.module('myApp', [])
 								}
 							},
 							function (response) {
-								$log.warn("oss save error!");
-								$log.warn(response);
+								$log.debug("oss save error!");
+								$log.debug(response);
 							},
 							function (response) {
-								$log.error("oss save exception occurs!");
-								$log.error(response);
+								$log.debug("oss save exception occurs!");
+								$log.debug(response);
 							});
 					},
 					ossGet: function (objKey) {
@@ -221,16 +217,16 @@ var myApp = angular.module('myApp', [])
 							function (response) {
 								if (response.data.success) {
 									var result = response.data.responseData.result;
-									$scope.myEditormd.cm.setValue()
+									$scope.myEditormd.cm.setValue("TODO");
 								}
 							},
 							function (response) {
-								$log.warn("oss save error!");
-								$log.warn(response);
+								$log.debug("oss save error!");
+								$log.debug(response);
 							},
 							function (response) {
-								$log.error("oss save exception occurs!");
-								$log.error(response);
+								$log.debug("oss save exception occurs!");
+								$log.debug(response);
 							});
 					}
 				},
@@ -267,4 +263,30 @@ var myApp = angular.module('myApp', [])
 				}
 			);
 		};
-	}]);
+	}])
+	.service('ossService', ['httpService', '$log', '$timeout', function (httpService, $log, $timeout) {
+		this.save = function ($scope, objKey, objData) {
+			httpService.post("/oss/save", {"objKey": objKey, "objData": objData},
+				function (response) {
+					$log.debug("oss save success!");
+					$log.debug(response);
+					if (response.data.success) {
+						var data = response.data.responseData;
+						$scope.msg.fileSize = ((data.fileSize)/1024).toFixed(2) + "KB";
+						$scope.msg.fileKey = data.key;
+						$(".msgTips").addClass("alert").addClass("alert-success").fadeIn();
+						$timeout(function () {
+							$(".msgTips").fadeOut();
+						}, 2000);
+					}
+				},
+				function (response) {
+					$log.debug("oss save error!");
+					$log.debug(response);
+				},
+				function (response) {
+					$log.debug("oss save exception occurs!");
+					$log.debug(response);
+				});
+		};
+	}])
