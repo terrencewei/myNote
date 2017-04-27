@@ -1,8 +1,9 @@
 var globalAppVar = {
 	config: {
 		angular: {
-			loggingDebug: true,
-		}
+			loggingDebug: false,
+		},
+		zIndex: 999999
 	}
 };
 /** ---------------------------------------------------------------------------------- */
@@ -90,25 +91,25 @@ var TOCUtils = {
 				}
 			})
 	}
-}
+};
 /** ---------------------------------------------------------------------------------- */
 /** message utils */
 /** ---------------------------------------------------------------------------------- */
 var msgUtils = {
-	zIndex: 999999,
+	zIndex: globalAppVar.config.zIndex,
 	success: function (msg) {
-		this.showMsg(true, msg, "success");
+		this.show(true, msg, "success");
 	},
 	info: function (msg) {
-		this.showMsg(true, msg, "info");
+		this.show(true, msg, "info");
 	},
 	warn: function (msg) {
-		this.showMsg(true, msg, "warning");
+		this.show(true, msg, "warning");
 	},
 	error: function (msg) {
-		this.showMsg(true, msg, "danger");
+		this.show(true, msg, "danger");
 	},
-	showMsg: function (isShow, msg, type) {
+	show: function (isShow, msg, type) {
 		this.clear();
 		if (isShow) {
 			$(".msgTips")
@@ -146,7 +147,7 @@ var msgUtils = {
 			.addClass("pull-left")
 			.attr("type", "button")
 			.on("click", function () {
-				_this.showMsg(false);
+				_this.show(false);
 			});
 
 		// do not use jQuery style so it can be easily copied from http://fontawesome.io/icon
@@ -162,62 +163,36 @@ var msgUtils = {
 				)
 		);
 
-		_this.showMsg(false);
+		_this.show(false);
 	}
-}
+};
 /** ---------------------------------------------------------------------------------- */
 /** popup utils */
 /** ---------------------------------------------------------------------------------- */
 var popupUtils = {
-	zIndex: 999999,
+	zIndex: globalAppVar.config.zIndex,
+	popup: null,
 	show: function (pEditormd) {
 		var _this = this;
 		var classPrefix = pEditormd.classPrefix;
 		var editor = pEditormd.editor;
-		var popup = editor.children("." + classPrefix + "dialog-info");
-
-		$("html,body").css("overflow-x", "hidden");
 
 		pEditormd.lockScreen(true);
 
-
+		$("html,body").css("overflow-x", "hidden");
 		pEditormd.mask.css({
 			opacity: "0.3",
 			backgroundColor: "#000"
 		}).show();
+		_this.popup.css("z-index", _this.zIndex).show();
 
-		if (popup.length < 1) {
-			// dialog is not exists, create a new dialog
-			editor.append([
-				"<div class=\"" + classPrefix + "dialog " + classPrefix + "dialog-info\" style=\"\">",
-				"<div class=\"" + classPrefix + "dialog-container\">Loading...</div>",
-				"<a href=\"javascript:;\" class=\"fa fa-close " + classPrefix + "dialog-close\"></a>",
-				"</div>"
-			].join("\n"));
-
-			popup = editor.children("." + classPrefix + "dialog-info");
-
-			popup
-				.find("." + classPrefix + "dialog-close")
-				.bind(window.editormd.mouseOrTouch("click", "touchend"), function () {
-					// bind dialog close btn event
-					_this.close(pEditormd);
-				})
-				.css("border", (pEditormd.isIE8) ? "1px solid #ddd" : "")
-				.css("z-index", _this.zIndex);
-		}
-
-		popup.css("z-index", _this.zIndex).show();
-
-		_this.reset(popup);
-
-		$(window).resize(_this.reset(popup));
-
-		return popup;
+		_this.reset(_this.popup);
+		$(window).resize(_this.reset(_this.popup));
 	},
-	update: function (pPopup, pPopupContent, pEditormd) {
-		pPopup.find("." + pEditormd.classPrefix + "dialog-container").text("").append(pPopupContent);
-		this.reset(pPopup);
+	update: function (pPopupContent, pEditormd) {
+		var _this = this;
+		_this.popup.find("." + pEditormd.classPrefix + "dialog-container").text("").append(pPopupContent);
+		_this.reset();
 	},
 	close: function (pEditormd) {
 		$("html,body").css("overflow-x", "");
@@ -225,13 +200,82 @@ var popupUtils = {
 		pEditormd.mask.hide();
 		pEditormd.lockScreen(false);
 	},
-	reset: function (pPopup) {
-		pPopup.css({
-			top: ($(window).height() - pPopup.height()) / 2 + "px",
-			left: ($(window).width() - pPopup.width()) / 2 + "px"
+	reset: function () {
+		var _this = this;
+		_this.popup.css({
+			top: ($(window).height() - _this.popup.height()) / 2 + "px",
+			left: ($(window).width() - _this.popup.width()) / 2 + "px"
 		});
+	},
+	init: function (pEditormd) {
+		var _this = this;
+		var classPrefix = pEditormd.classPrefix;
+		var editor = pEditormd.editor;
+		var popup = editor.children("." + classPrefix + "dialog-info");
+
+		// create a new popup
+		editor.append([
+			"<div class=\"" + classPrefix + "dialog " + classPrefix + "dialog-info\" style=\"\">",
+			"<div class=\"" + classPrefix + "dialog-container\">Loading...</div>",
+			"<a href=\"javascript:;\" class=\"fa fa-close " + classPrefix + "dialog-close\"></a>",
+			"</div>"
+		].join("\n"));
+
+		popup = editor.children("." + classPrefix + "dialog-info");
+
+		popup
+			.find("." + classPrefix + "dialog-close")
+			.bind(window.editormd.mouseOrTouch("click", "touchend"), function () {
+				// bind dialog close btn event
+				_this.close(pEditormd);
+			})
+			.css("border", (pEditormd.isIE8) ? "1px solid #ddd" : "")
+			.css("z-index", _this.zIndex);
+
+		pEditormd.mask.bind(window.editormd.mouseOrTouch("click", "touchend"), function () {
+			_this.close(pEditormd);
+		});
+
+		_this.popup = popup;
 	}
-}
+};
+/** ---------------------------------------------------------------------------------- */
+/** mask utils
+ /** ---------------------------------------------------------------------------------- */
+var maskUtils = {
+	zIndex: globalAppVar.config.zIndex,
+	mask: null,
+	show: function (isShow) {
+		var _this = this;
+		if (isShow) {
+			_this.mask.show();
+		} else {
+			_this.mask.hide();
+		}
+	},
+	init: function () {
+		var _this = this;
+		var mask = $("<div>")
+			.addClass("maskContainer")
+			.css("width", "100%")
+			.css("height", "100%")
+			.css("top", "0")
+			.css("left", "0")
+			.css("position", "fixed")
+			.css("background", "#000")
+			.css("z-index", "99998")
+			.css("opacity", "0.3")
+			.css("background-color", "rgb(0, 0, 0)")
+			.append('<table width=\"100%\" height=\"100%\"><tr><td align=\"center\"><i class=\"fa fa-spinner fa-spin fa-3x fa-fw\"></i></td></tr></table>');
+
+		// build mask div
+		$("body").children().first().before(mask);
+
+		_this.mask = mask;
+
+		_this.show(false);
+	}
+};
 /** ---------------------------------------------------------------------------------- */
 /** editorUtils
  /** ---------------------------------------------------------------------------------- */
@@ -243,17 +287,63 @@ var editorUtils = {
 	},
 	shared: {
 		data: {
-			currentObjKey: null,
+			currentObjKey: null
 		},
 		fn: {
-			save: null,
-			get: null,
+			save: function (successFn, objKey, objData) {
+				// to be implements by other module
+			},
+			get: function (successFn, objKey) {
+				// to be implements by other module
+			}
+		}
+	},
+	oss: {
+		save: function (thisEditormd) {
+			maskUtils.show(true);
+
+			if (editorUtils.shared.data.currentObjKey != null) {
+				// save to OSS
+				editorUtils.shared.fn.save(function (response) {
+					maskUtils.show(false);
+					msgUtils.success("\" " + response.data.key + " \" 已保存到云端 (" + ((response.data.fileSize) / 1024).toFixed(2) + "KB)");
+				}, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown());
+			} else {
+				msgUtils.warn("你还没有选择任何文件");
+				maskUtils.show(false);
+			}
 		},
+		getAll: function (thisEditormd) {
+
+			maskUtils.show(true);
+
+			editorUtils.shared.fn.get(function (response) {
+				maskUtils.show(false);
+
+				var popupContent = $('<div class="list-group"></div>')
+					.append('<a class="list-group-item active">Click a file to edit</a>');
+				// each line content
+				$.each(response.data.results, function (index, data) {
+					popupContent.append(
+						$('<a class="list-group-item">' + data.key + '</a>')
+							.on("click", function () {
+								editorUtils.shared.fn.get(function (response) {
+									popupUtils.close(thisEditormd);
+									editorUtils.shared.data.currentObjKey = data.key;
+									thisEditormd.cm.setValue(response.data);
+								}, data.key);
+							})
+					);
+				});
+				popupUtils.update(popupContent, thisEditormd);
+				popupUtils.show(thisEditormd);
+			});
+		}
 	},
 	init: function () {
 		msgUtils.init();
 
-		editormd(editorUtils.config.containerId, {
+		var myEditormd = editormd(editorUtils.config.containerId, {
 			width: "90%",
 			height: 720,
 			path: editorUtils.config.libPath,
@@ -279,54 +369,22 @@ var editorUtils = {
 				}
 			},
 			toolbarHandlers: {
-				/**
-				 * @param {Object}      cm         CodeMirror对象
-				 * @param {Object}      icon       图标按钮jQuery元素对象
-				 * @param {Object}      cursor     CodeMirror的光标对象，可获取光标所在行和位置
-				 * @param {String}      selection  编辑器选中的文本
-				 */
 				gotoDevExamples: function (cm, icon, cursor, selection) {
 					window.open(editorUtils.config.devExamplePath);
 				},
-				ossSave: function (cm, icon, cursor, selection) {
-					var _this = this;
-					if (editorUtils.shared.data.currentObjKey != null) {
-						// save to OSS
-						editorUtils.shared.fn.save(function (response) {
-							msgUtils.success("\" " + response.data.key + " \" 已保存到云端 (" + ((response.data.fileSize) / 1024).toFixed(2) + "KB)");
-						}, editorUtils.shared.data.currentObjKey, _this.getMarkdown());
-					} else {
-						msgUtils.warn("你还没有选择任何文件");
-					}
+				ossSave: function () {
+					editorUtils.oss.save(this);
 				},
 				ossGetAll: function () {
-					var _this = this;
-
-					var popup = popupUtils.show(_this);
-
-					editorUtils.shared.fn.get(function (response) {
-						var popupContent = $('<div class="list-group"></div>')
-							.append('<a class="list-group-item active">Click a file to edit</a>');
-						// each line content
-						$.each(response.data.results, function (index, data) {
-							popupContent.append(
-								$('<a class="list-group-item">' + data.key + '</a>')
-									.on("click", function () {
-										editorUtils.shared.fn.get(function (response) {
-											popupUtils.close(_this);
-											editorUtils.shared.data.currentObjKey = data.key;
-											_this.cm.setValue(response.data);
-										}, data.key);
-									})
-							);
-						});
-						popupUtils.update(popup, popupContent, _this);
-					});
+					editorUtils.oss.getAll(this);
 				}
 			},
 			onload: function () {
 				var _this = this;
+
 				TOCUtils.reRenderTOC();
+
+				// editormd content change
 				_this.cm.on("change", function (_cm, changeObj) {
 					timeout = setTimeout(function () {
 						clearTimeout(timeout);
@@ -334,7 +392,20 @@ var editorUtils = {
 						timeout = null;
 					}, _this.settings.delay);
 				});
+
+				_this.addKeyMap({
+					"Ctrl-S": function (cm) {
+						editorUtils.oss.save(_this);
+					},
+					"Ctrl-O": function (cm) {
+						editorUtils.oss.getAll(_this);
+					}
+				});
 			}
 		});
+
+		popupUtils.init(myEditormd);
+
+		maskUtils.init();
 	}
 };

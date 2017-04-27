@@ -2,8 +2,8 @@ var myApp = angular.module('myApp', [])
 	.config(function ($logProvider) {
 		$logProvider.debugEnabled(globalAppVar.config.angular.loggingDebug);
 	})
-	.controller('editorController', ['$scope', 'httpService', 'ossService', '$log', '$timeout',
-		function ($scope, httpService, ossService, $log, $timeout) {
+	.controller('editorController', ['$scope', 'ossService',
+		function ($scope, ossService) {
 
 			// $scope definition
 			$scope.oss = {
@@ -11,12 +11,10 @@ var myApp = angular.module('myApp', [])
 			};
 
 			// initialization
-			editorUtils.shared.data.currentObjKey = $scope.oss.key;
 			editorUtils.shared.data.watch("currentObjKey", function (id, oldValue, newValue) {
 				$scope.oss.key = newValue;
 				return newValue;
 			})
-
 			editorUtils.shared.fn.save = ossService.save;
 			editorUtils.shared.fn.get = ossService.get;
 
@@ -24,28 +22,28 @@ var myApp = angular.module('myApp', [])
 
 		}
 	])
-	.service('httpService', ['$http', '$log', function ($http, $log) {
+	.service('httpService', ['$http', 'logService', function ($http, logService) {
 		this.post = function (apiurl, apidata,
 		                      successFn,
 		                      errorFn,
 		                      exceptionFn) {
-			$log.debug("send post request apiurl:" + apiurl + ", apidata:" + JSON.stringify(apidata));
+			logService.debug("send post request apiurl:" + apiurl + ", apidata:" + JSON.stringify(apidata));
 			$http.post(apiurl, apidata).then(
 				function (response) {
-					$log.debug("receive post success response:" + JSON.stringify(response));
+					logService.debug("receive post success response:" + JSON.stringify(response));
 					if (successFn && typeof(successFn) == "function") {
 						successFn(response);
 					}
 				},
 				function (response) {
-					$log.debug("receive post error response:" + JSON.stringify(response));
+					logService.debug("receive post error response:" + JSON.stringify(response));
 					if (errorFn && typeof(errorFn) == "function") {
 						errorFn(response);
 					}
 				}
 			).catch(
 				function (response) {
-					$log.debug("receive post exception response:" + JSON.stringify(response));
+					logService.debug("receive post exception response:" + JSON.stringify(response));
 					if (exceptionFn && typeof(exceptionFn) == "function") {
 						exceptionFn(response);
 					}
@@ -53,12 +51,10 @@ var myApp = angular.module('myApp', [])
 			);
 		};
 	}])
-	.service('ossService', ['httpService', '$log', '$timeout', function (httpService, $log, $timeout) {
+	.service('ossService', ['httpService', function (httpService) {
 		this.save = function (successFn, objKey, objData) {
 			httpService.post("/oss/save", {"objKey": objKey, "objData": objData},
 				function (response) {
-					$log.debug("oss save success!");
-					$log.debug(response);
 					if (response.data.success) {
 						successFn(response.data);
 					}
@@ -72,4 +68,9 @@ var myApp = angular.module('myApp', [])
 					}
 				});
 		}
+	}])
+	.service('logService', ['$log', function ($log) {
+		this.debug = function (logMsg) {
+			$log.debug("=====>>>> DEBUG: " + logMsg);
+		};
 	}]);
