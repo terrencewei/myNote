@@ -6,123 +6,12 @@ var myApp = angular.module('myApp', [])
 		function ($scope, httpService, ossService, $log, $timeout) {
 
 			// js definition
-			// function changeMsgCSS() {
-			// 	$(".msgTips").fadeIn();
-			// 	$timeout(function () {
-			// 		$(".msgTips").fadeOut();
-			// 	}, 2000);
-			// }
+			msgUtils.init();
 
 			// $scope definition
 			$scope.oss = {
 				key: null
 			};
-			$scope.hideAlert = function () {
-				$scope.msg = null;
-				$scope.msgType = null;
-			};
-
-			$scope.success = function (msg) {
-				$scope.msg = msg;
-				$scope.msgType = "success";
-				$timeout(function () {
-					$scope.msg = null;
-					$scope.msgType = null;
-				}, 1000);
-			};
-			$scope.warning = function (msg) {
-				$scope.msg = msg;
-				$scope.msgType = "warning";
-				$timeout(function () {
-					$scope.msg = null;
-					$scope.msgType = null;
-				}, 1000);
-			};
-
-			var myTocUtils = {
-				tocContainer: "#custom-toc-container",
-				tocMenuContainer: ".markdown-toc-list",
-				tocMenuTitleClass: "toc-menu-title",
-				tocMenuTitleButtonClass: "toc-menu-title-btn",
-				tocMenuTitleButtonInactiveClass: "fa-caret-down",
-				tocMenuTitleContentClass: "toc-menu-title-content",
-				tocMenuBodyClass: "toc-menu-body",
-				reRenderTOC: function () {
-					for (var i = 1; i <= 10; i++) {
-						myTocUtils.toBootstrapCollapse("toc-level-" + i);
-					}
-				},
-				toBootstrapCollapse: function (levelClass) {
-					var $levelClass = $("." + levelClass);
-					var levelSize = $levelClass.size();
-					if (levelSize <= 0) {
-						return;
-					}
-					$.each($levelClass, function (index, level) {
-						var indexNum = (index + 1);
-						var collapseTargetClassName = levelClass + "-collapse-" + indexNum;
-						// <a> link
-						$(level)
-							.addClass(myTocUtils.tocMenuTitleContentClass)
-							.wrap("<div class=\"" + myTocUtils.tocMenuTitleClass + " " + myTocUtils.tocMenuTitleClass + "-" + levelClass + "\"></div>");
-						// <a> link's parent <div>
-						if ($(level).parent().siblings("ul").size() > 0) {
-							$(level).before("<i class=\"" + myTocUtils.tocMenuTitleButtonClass + " pull-left fa fa-lg " + myTocUtils.tocMenuTitleButtonInactiveClass + " \"></i>");
-						} else {
-							$(level).before("<i class='pull-left fa fa-lg fa-caret-right' style='padding: 5px 0 0 5px'></i>");
-						}
-						// <a> link's siblings <i>
-						// $(level).parent().children("i")
-						$(level).parent()
-							.attr("data-toggle", "collapse")
-							.attr("data-target", "." + collapseTargetClassName)
-							.attr("data-parent", myTocUtils.tocContainer);
-
-						// <a> link's parent <div>'s siblings <ul>
-						$(level).parent().siblings("ul").first()
-							.addClass(myTocUtils.tocMenuBodyClass)
-							.addClass(collapseTargetClassName)
-							.addClass("collapse");
-
-						// collapse menu show event
-						$("." + collapseTargetClassName).on('show.bs.collapse', function () {
-							// close any other collapse menu
-							for (var i = 1; i <= (levelSize + 1); i++) {
-								if (i == indexNum) {
-									continue;
-								}
-								$("." + levelClass + "-collapse-" + i).collapse("hide");
-							}
-							// change parent menu's icon
-							$(this).siblings("." + myTocUtils.tocMenuTitleClass).children("." + myTocUtils.tocMenuTitleButtonClass)
-								.css("transform", "rotate(180deg)")
-								.css("padding", "0 5px 5px 0");
-
-						});
-
-						// collapse menu hide event
-						$("." + collapseTargetClassName).on('hide.bs.collapse', function () {
-							// change parent menu's icon
-							$(this).siblings("." + myTocUtils.tocMenuTitleClass).children("." + myTocUtils.tocMenuTitleButtonClass)
-								.css("transform", "")
-								.css("padding", "5px 0 0 5px");
-						});
-					})
-				},
-				// this jquery ui method is useless for now
-				toJqueryuiCollapse: function (levelClass) {
-					$(myTocUtils.tocMenuContainer)
-						.accordion({
-							header: "> li > a",
-							collapsible: true,
-							heightStyle: "content",
-							icons: {
-								"header": "ui-icon-triangle-1-e",
-								"activeHeader": "ui-icon-triangle-1-s"
-							}
-						})
-				}
-			}
 
 			$scope.editorUtils = {
 				containerId: "myEditormd",
@@ -151,10 +40,7 @@ var myApp = angular.module('myApp', [])
 						dialog
 							.find("." + classPrefix + "dialog-close")
 							.bind(editormd.mouseOrTouch("click", "touchend"), function () {
-								$("html,body").css("overflow-x", "");
-								dialog.hide();
-								dialogMask.hide();
-								thisEditormd.lockScreen(false);
+								$scope.editorUtils.closeOSSGetAllDialog(thisEditormd);
 							})
 							.css("border", (editormd.isIE8) ? "1px solid #ddd" : "")
 							.css("z-index", editormd.dialogZindex);
@@ -167,6 +53,12 @@ var myApp = angular.module('myApp', [])
 				updateOSSGetAllDialog: function (dialogContent, dialog, thisEditormd) {
 					dialog.find("." + thisEditormd.classPrefix + "dialog-container").text("").append(dialogContent);
 					$scope.editorUtils.resetOSSGetAllDialogPosition(dialog);
+				},
+				closeOSSGetAllDialog: function (thisEditormd) {
+					$("html,body").css("overflow-x", "");
+					thisEditormd.editor.children("." + thisEditormd.classPrefix + "dialog-info").hide();
+					thisEditormd.mask.hide();
+					thisEditormd.lockScreen(false);
 				},
 				resetOSSGetAllDialogPosition: function (dialog) {
 					dialog.css({
@@ -215,10 +107,10 @@ var myApp = angular.module('myApp', [])
 						if ($scope.oss.key != null) {
 							// save to OSS
 							ossService.save(function (response) {
-								$scope.success("\" " + response.data.key + " \" 已保存到云端 (" + ((response.data.fileSize) / 1024).toFixed(2) + "KB)");
+								msgUtils.success("\" " + response.data.key + " \" 已保存到云端 (" + ((response.data.fileSize) / 1024).toFixed(2) + "KB)");
 							}, $scope.oss.key, $scope.editormd.getMarkdown());
 						} else {
-							$scope.warning("你还没有选择任何文件");
+							msgUtils.warn("你还没有选择任何文件");
 						}
 					},
 					ossGetAll: function () {
@@ -231,9 +123,10 @@ var myApp = angular.module('myApp', [])
 							$.each(response.data.results, function (index, data) {
 								_$dialogTitle = $("<a>").addClass("list-group-item").text(data.key);
 								_$dialogTitle.on("click", function () {
-									$scope.oss.key = data.key;
 									ossService.get(function (response) {
+										$scope.oss.key = data.key;
 										$scope.editormd.cm.setValue(response.data);
+										$scope.editorUtils.closeOSSGetAllDialog($scope.editormd);
 									}, data.key);
 								});
 								_$dialogContent.append(_$dialogTitle);
@@ -245,10 +138,10 @@ var myApp = angular.module('myApp', [])
 				onload: function () {
 					myTocUtils.reRenderTOC();
 					$scope.editormd.cm.on("change", function (_cm, changeObj) {
-						timer = setTimeout(function() {
-							clearTimeout(timer);
+						var timeout = setTimeout(function () {
+							clearTimeout(timeout);
 							myTocUtils.reRenderTOC();
-							timer = null;
+							timeout = null;
 						}, $scope.editormd.settings.delay);
 					});
 				}

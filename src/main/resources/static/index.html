@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="myApp" ng-controller="editorController">
+<html lang="en" ng-app="myApp">
 <head>
     <meta charset="UTF-8"/>
     <title>Title</title>
@@ -35,14 +35,8 @@
 
 </head>
 <body>
-<div class="msgTips alert alert-{{msgType || 'info'}}" ng-show="msg">
-    <button type="button" class="close" ng-click="hideAlert()">
-        <span class="glyphicon glyphicon-remove"></span>
-    </button>
-    {{msg}}
-</div>
-<div id="myEditormdTocSidebar">
-    {{ oss.key!=null?"正在编辑: "+oss.key:"未选择云端文件" }}
+<div id="myEditormdTocSidebar" ng-controller="editorController">
+    <div>{{ oss.key!=null?"正在编辑: "+oss.key:"未选择云端文件" }}</div>
     <br/>
     <br/>
     <h1>目录</h1>
