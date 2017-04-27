@@ -47,6 +47,11 @@ var myApp = angular.module('myApp', [])
 				tocMenuTitleButtonInactiveClass: "fa-caret-down",
 				tocMenuTitleContentClass: "toc-menu-title-content",
 				tocMenuBodyClass: "toc-menu-body",
+				reRenderTOC: function () {
+					for (var i = 1; i <= 10; i++) {
+						myTocUtils.toBootstrapCollapse("toc-level-" + i);
+					}
+				},
 				toBootstrapCollapse: function (levelClass) {
 					var $levelClass = $("." + levelClass);
 					var levelSize = $levelClass.size();
@@ -238,10 +243,14 @@ var myApp = angular.module('myApp', [])
 					}
 				},
 				onload: function () {
-					$(myTocUtils.tocContainer).before('<h1>Table of Contents</h1>');
-					for (var i = 1; i <= 10; i++) {
-						myTocUtils.toBootstrapCollapse("toc-level-" + i);
-					}
+					myTocUtils.reRenderTOC();
+					$scope.editormd.cm.on("change", function (_cm, changeObj) {
+						timer = setTimeout(function() {
+							clearTimeout(timer);
+							myTocUtils.reRenderTOC();
+							timer = null;
+						}, $scope.editormd.settings.delay);
+					});
 				}
 			});
 		}
