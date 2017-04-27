@@ -35,8 +35,16 @@
 
 </head>
 <body>
-<div class="msgTips">" {{ msg.fileKey }} " 已保存到云端 ({{ msg.fileSize }})</div>
+<div class="msgTips alert alert-{{msgType || 'info'}}" ng-show="msg">
+    <button type="button" class="close" ng-click="hideAlert()">
+        <span class="glyphicon glyphicon-remove"></span>
+    </button>
+    {{msg}}
+</div>
 <div id="myEditormdTocSidebar">
+    {{ oss.key!=null?"正在编辑: "+oss.key:"未选择云端文件" }}
+    <br/>
+    <br/>
     <div class="editormd-preview-container" id="custom-toc-container"></div>
 </div>
 <div id="myEditormd">

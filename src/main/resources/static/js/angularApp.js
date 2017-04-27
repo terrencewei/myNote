@@ -2,15 +2,42 @@ var myApp = angular.module('myApp', [])
 	.config(function ($logProvider) {
 		$logProvider.debugEnabled(globalAppVar.config.angular.loggingDebug);
 	})
-	.controller('editorController', ['$scope', 'httpService', 'ossService', '$log',
-		function ($scope, httpService, ossService, $log) {
+	.controller('editorController', ['$scope', 'httpService', 'ossService', '$log', '$timeout',
+		function ($scope, httpService, ossService, $log, $timeout) {
 
-			// $scope obj definition
-			$scope.msg = {};
-			$scope.myEditormd = {};
+			// js definition
+			// function changeMsgCSS() {
+			// 	$(".msgTips").fadeIn();
+			// 	$timeout(function () {
+			// 		$(".msgTips").fadeOut();
+			// 	}, 2000);
+			// }
 
-			// init logic
-			$(".msgTips").hide();
+			// $scope definition
+			$scope.oss = {
+				key: null
+			};
+			$scope.hideAlert = function () {
+				$scope.msg = null;
+				$scope.msgType = null;
+			};
+
+			$scope.success = function (msg) {
+				$scope.msg = msg;
+				$scope.msgType = "success";
+				$timeout(function () {
+					$scope.msg = null;
+					$scope.msgType = null;
+				}, 1000);
+			};
+			$scope.warning = function (msg) {
+				$scope.msg = msg;
+				$scope.msgType = "warning";
+				$timeout(function () {
+					$scope.msg = null;
+					$scope.msgType = null;
+				}, 1000);
+			};
 
 			var myTocUtils = {
 				tocContainer: "#custom-toc-container",
@@ -92,10 +119,10 @@ var myApp = angular.module('myApp', [])
 				}
 			}
 
-			var myEditorUtils = {
-				editorContainerId: "myEditormd",
-				editormdLibPath: "/lib/editormd-1.5.0/lib/",
-				editormdDevExamplePath: "/lib/editormd-1.5.0/examples/index.html",
+			$scope.editorUtils = {
+				containerId: "myEditormd",
+				libPath: "/lib/editormd-1.5.0/lib/",
+				devExamplePath: "/lib/editormd-1.5.0/examples/index.html",
 				showOSSGetAllDialog: function (thisEditormd) {
 					var classPrefix = thisEditormd.classPrefix;
 					var editor = thisEditormd.editor;
@@ -128,13 +155,13 @@ var myApp = angular.module('myApp', [])
 							.css("z-index", editormd.dialogZindex);
 					}
 					dialog.css("z-index", editormd.dialogZindex).show();
-					myEditorUtils.resetOSSGetAllDialogPosition(dialog);
-					$(window).resize(myEditorUtils.resetOSSGetAllDialogPosition(dialog));
+					$scope.editorUtils.resetOSSGetAllDialogPosition(dialog);
+					$(window).resize($scope.editorUtils.resetOSSGetAllDialogPosition(dialog));
 					return dialog;
 				},
 				updateOSSGetAllDialog: function (dialogContent, dialog, thisEditormd) {
 					dialog.find("." + thisEditormd.classPrefix + "dialog-container").text("").append(dialogContent);
-					myEditorUtils.resetOSSGetAllDialogPosition(dialog);
+					$scope.editorUtils.resetOSSGetAllDialogPosition(dialog);
 				},
 				resetOSSGetAllDialogPosition: function (dialog) {
 					dialog.css({
@@ -144,14 +171,14 @@ var myApp = angular.module('myApp', [])
 				}
 			}
 
-			$scope.myEditormd = editormd(myEditorUtils.editorContainerId, {
+			$scope.editormd = editormd($scope.editorUtils.containerId, {
 				width: "90%",
 				height: 720,
-				path: myEditorUtils.editormdLibPath,
+				path: $scope.editorUtils.libPath,
 				tocStartLevel: 1,
 				tocContainer: myTocUtils.tocContainer,
 				tocDropdown: false,
-				tocTitle: "Table of Contents",
+				tocTitle: "目录",
 				toolbar: true,
 				toolbarIcons: function () {
 					return ["ossSave", "ossGetAll", "|", "gotoDevExamples"];
@@ -177,63 +204,41 @@ var myApp = angular.module('myApp', [])
 					 * @param {String}      selection  编辑器选中的文本
 					 */
 					gotoDevExamples: function (cm, icon, cursor, selection) {
-						window.open(myEditorUtils.editormdDevExamplePath);
+						window.open($scope.editorUtils.devExamplePath);
 					},
 					ossSave: function (cm, icon, cursor, selection) {
-						//TODO: file key should comes from OSS server
-						ossService.save($scope, "test.md", $scope.myEditormd.getMarkdown());
+						if ($scope.oss.key != null) {
+							// save to OSS
+							ossService.save(function (response) {
+								$scope.success("\" " + response.data.key + " \" 已保存到云端 (" + ((response.data.fileSize) / 1024).toFixed(2) + "KB)");
+							}, $scope.oss.key, $scope.editormd.getMarkdown());
+						} else {
+							$scope.warning("你还没有选择任何文件");
+						}
 					},
 					ossGetAll: function () {
-						var thisEditormd = this;
-						var dialog = myEditorUtils.showOSSGetAllDialog(thisEditormd);
-						// get all from oss
-						httpService.post("/oss/get", {},
-							function (response) {
-								if (response.data.success) {
-									var $dialogContent = $("<div>").addClass("list-group");
-									var $dialogTitle = $("<a>").addClass("list-group-item").addClass("active").text("Click a file to edit");
-									$dialogContent.append($dialogTitle);
-									$.each(response.data.responseData.results, function (index, result) {
-										$dialogTitle = $("<a>").addClass("list-group-item").text(result.key);
-										$dialogTitle.on("click", function () {
-											myEditorUtils.ossGet(result.key);
-										});
-										$dialogContent.append($dialogTitle);
-									});
-									myEditorUtils.updateOSSGetAllDialog($dialogContent, dialog, thisEditormd);
-								}
-							},
-							function (response) {
-								$log.debug("oss save error!");
-								$log.debug(response);
-							},
-							function (response) {
-								$log.debug("oss save exception occurs!");
-								$log.debug(response);
+						var editormd = this;
+						var dialog = $scope.editorUtils.showOSSGetAllDialog(editormd)
+						ossService.get(function (response) {
+							var _$dialogContent = $("<div>").addClass("list-group");
+							var _$dialogTitle = $("<a>").addClass("list-group-item").addClass("active").text("Click a file to edit");
+							_$dialogContent.append(_$dialogTitle);
+							$.each(response.data.results, function (index, data) {
+								_$dialogTitle = $("<a>").addClass("list-group-item").text(data.key);
+								_$dialogTitle.on("click", function () {
+									$scope.oss.key = data.key;
+									ossService.get(function (response) {
+										$scope.editormd.cm.setValue(response.data);
+									}, data.key);
+								});
+								_$dialogContent.append(_$dialogTitle);
 							});
-					},
-					ossGet: function (objKey) {
-						httpService.post("/oss/get/" + $(this).text(), {},
-							function (response) {
-								if (response.data.success) {
-									var result = response.data.responseData.result;
-									$scope.myEditormd.cm.setValue("TODO");
-								}
-							},
-							function (response) {
-								$log.debug("oss save error!");
-								$log.debug(response);
-							},
-							function (response) {
-								$log.debug("oss save exception occurs!");
-								$log.debug(response);
-							});
+							$scope.editorUtils.updateOSSGetAllDialog(_$dialogContent, dialog, editormd);
+						});
 					}
 				},
 				onload: function () {
-
 					$(myTocUtils.tocContainer).before('<h1>Table of Contents</h1>');
-
 					for (var i = 1; i <= 10; i++) {
 						myTocUtils.toBootstrapCollapse("toc-level-" + i);
 					}
@@ -265,28 +270,22 @@ var myApp = angular.module('myApp', [])
 		};
 	}])
 	.service('ossService', ['httpService', '$log', '$timeout', function (httpService, $log, $timeout) {
-		this.save = function ($scope, objKey, objData) {
+		this.save = function (successFn, objKey, objData) {
 			httpService.post("/oss/save", {"objKey": objKey, "objData": objData},
 				function (response) {
 					$log.debug("oss save success!");
 					$log.debug(response);
 					if (response.data.success) {
-						var data = response.data.responseData;
-						$scope.msg.fileSize = ((data.fileSize)/1024).toFixed(2) + "KB";
-						$scope.msg.fileKey = data.key;
-						$(".msgTips").addClass("alert").addClass("alert-success").fadeIn();
-						$timeout(function () {
-							$(".msgTips").fadeOut();
-						}, 2000);
+						successFn(response.data);
 					}
-				},
-				function (response) {
-					$log.debug("oss save error!");
-					$log.debug(response);
-				},
-				function (response) {
-					$log.debug("oss save exception occurs!");
-					$log.debug(response);
 				});
 		};
-	}])
+		this.get = function (successFn, objKey) {
+			httpService.post("/oss/get", {objKey: objKey},
+				function (response) {
+					if (response.data.success) {
+						successFn(response.data);
+					}
+				});
+		}
+	}]);

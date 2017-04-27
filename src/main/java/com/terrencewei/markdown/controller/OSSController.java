@@ -1,6 +1,5 @@
 package com.terrencewei.markdown.controller;
 
-import com.terrencewei.markdown.bean.OSSResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.terrencewei.markdown.bean.OSSRequest;
+import com.terrencewei.markdown.bean.OSSResponse;
 import com.terrencewei.markdown.service.OSSService;
 import com.terrencewei.markdown.util.StringUtils;
 

@@ -6,9 +6,9 @@ package com.terrencewei.markdown.bean;
 public class OSSResponse {
 
     private boolean success;
-    private String  repsonseCode;
-    private String  responseMsg;
-    private Object  responseData;
+    private String  code;
+    private String  msg;
+    private Object  data;
 
 
 
@@ -24,45 +24,44 @@ public class OSSResponse {
 
 
 
-    public String getRepsonseCode() {
-        return repsonseCode;
+    public String getCode() {
+        return code;
     }
 
 
 
-    public void setRepsonseCode(String pRepsonseCode) {
-        repsonseCode = pRepsonseCode;
+    public void setCode(String pCode) {
+        code = pCode;
     }
 
 
 
-    public String getResponseMsg() {
-        return responseMsg;
+    public String getMsg() {
+        return msg;
     }
 
 
 
-    public void setResponseMsg(String pResponseMsg) {
-        responseMsg = pResponseMsg;
+    public void setMsg(String pMsg) {
+        msg = pMsg;
     }
 
 
 
-    public Object getResponseData() {
-        return responseData;
+    public Object getData() {
+        return data;
     }
 
 
 
-    public void setResponseData(Object pResponseData) {
-        responseData = pResponseData;
+    public void setData(Object pData) {
+        data = pData;
     }
 
 
 
     @Override
     public String toString() {
-        return "OSSResponse [" + "success=" + success + ", repsonseCode=" + repsonseCode + ", responseMsg="
-                + responseMsg + ", responseData=" + responseData + ']';
+        return "OSSResponse [" + "success=" + success + ", code=" + code + ", msg=" + msg + ", data=" + data + ']';
     }
 }
