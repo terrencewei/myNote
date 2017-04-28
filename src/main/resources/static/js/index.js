@@ -1,7 +1,7 @@
 var globalAppVar = {
 	config: {
 		angular: {
-			loggingDebug: true,
+			loggingDebug: false,
 		},
 		zIndex: 999999
 	}

@@ -49,27 +49,28 @@ public class AliyunUtils extends OSSUtilsImpl {
                 new ByteArrayInputStream(pContent.getBytes()));
 
         // 上传回调参数
-        Callback callback = new Callback();
-        callback.setCallbackUrl("/put/success");
-        callback.setCallbackHost("localhost");
-        callback.setCallbackBody("{\\\"mimeType\\\":${mimeType},\\\"size\\\":${size}}");
-        callback.setCalbackBodyType(Callback.CalbackBodyType.JSON);
-        callback.addCallbackVar("x:var1", "value1");
-        callback.addCallbackVar("x:var2", "value2");
-        putObjectRequest.setCallback(callback);
+        // Callback callback = new Callback();
+        // callback.setCallbackUrl("/put/success");
+        // callback.setCallbackHost("http://localhost");
+        // callback.setCallbackBody("{\\\"mimeType\\\":${mimeType},\\\"size\\\":${size}}");
+        // callback.setCalbackBodyType(Callback.CalbackBodyType.JSON);
+        // callback.addCallbackVar("x:var1", "value1");
+        // callback.addCallbackVar("x:var2", "value2");
+        // putObjectRequest.setCallback(callback);
 
         PutObjectResult putObjectResult = ossClient.putObject(putObjectRequest);
 
         // 读取上传回调返回的消息内容
-        byte[] buffer = new byte[1024];
-        try {
-            putObjectResult.getCallbackResponseBody().read(buffer);
-            // 一定要close，否则会造成连接资源泄漏
-            putObjectResult.getCallbackResponseBody().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Aliyun put result call back is: " + new String(buffer));
+        // byte[] buffer = new byte[1024];
+        // try {
+        // putObjectResult.getCallbackResponseBody().read(buffer);
+        // // 一定要close，否则会造成连接资源泄漏
+        // putObjectResult.getCallbackResponseBody().close();
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
+        // System.out.println("Aliyun put result call back is: " + new
+        // String(buffer));
 
         // 关闭client
         ossClient.shutdown();
@@ -100,7 +101,7 @@ public class AliyunUtils extends OSSUtilsImpl {
                 if (line == null) {
                     break;
                 }
-                content.append(line);
+                content.append(line).append("\n");
             }
             reader.close();
         } catch (IOException e) {
