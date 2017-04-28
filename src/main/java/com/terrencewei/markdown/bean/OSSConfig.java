@@ -1,20 +1,15 @@
 package com.terrencewei.markdown.bean;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
-
 /**
  * Created by terrencewei on 2017/04/21.
  */
-@Component
-@ConfigurationProperties(prefix = "ossConfig")
 public class OSSConfig {
 
     private String accessKey;
     private String secureKey;
     private String bucketName;
+    private String endPoint;
     private int    expireSeconds;
-    private String downloadBaseUrl;
 
 
 
@@ -66,14 +61,14 @@ public class OSSConfig {
 
 
 
-    public String getDownloadBaseUrl() {
-        return downloadBaseUrl;
+    public String getEndPoint() {
+        return endPoint;
     }
 
 
 
-    public void setDownloadBaseUrl(String pDownloadBaseUrl) {
-        downloadBaseUrl = pDownloadBaseUrl;
+    public void setEndPoint(String pEndPoint) {
+        endPoint = pEndPoint;
     }
 
 
@@ -81,6 +76,6 @@ public class OSSConfig {
     @Override
     public String toString() {
         return "OSSConfig [" + "accessKey=" + accessKey + ", secureKey=" + secureKey + ", bucketName=" + bucketName
-                + ", expireSeconds=" + expireSeconds + ", downloadBaseUrl=" + downloadBaseUrl + ']';
+                + ", expireSeconds=" + expireSeconds + ", endPoint=" + endPoint + ']';
     }
 }

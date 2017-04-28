@@ -15,8 +15,9 @@ var myApp = angular.module('myApp', [])
 				$scope.oss.key = newValue;
 				return newValue;
 			})
-			editorUtils.shared.fn.save = ossService.save;
+			editorUtils.shared.fn.put = ossService.put;
 			editorUtils.shared.fn.get = ossService.get;
+			editorUtils.shared.fn.list = ossService.list;
 
 			editorUtils.init();
 
@@ -52,8 +53,16 @@ var myApp = angular.module('myApp', [])
 		};
 	}])
 	.service('ossService', ['httpService', function (httpService) {
-		this.save = function (successFn, objKey, objData) {
-			httpService.post("/oss/save", {"objKey": objKey, "objData": objData},
+		this.put = function (successFn, objKey, objData) {
+			httpService.post("/oss/put", {
+					bucketName: "",
+					objects: [
+						{
+							key: objKey,
+							content: objData
+						}
+					]
+				},
 				function (response) {
 					if (response.data.success) {
 						successFn(response.data);
@@ -61,7 +70,22 @@ var myApp = angular.module('myApp', [])
 				});
 		};
 		this.get = function (successFn, objKey) {
-			httpService.post("/oss/get", {objKey: objKey},
+			httpService.post("/oss/get", {
+					bucketName: "",
+					objects: [
+						{
+							key: objKey
+						}
+					]
+				},
+				function (response) {
+					if (response.data.success) {
+						successFn(response.data);
+					}
+				});
+		};
+		this.list = function (successFn) {
+			httpService.post("/oss/list", {},
 				function (response) {
 					if (response.data.success) {
 						successFn(response.data);

@@ -2,9 +2,9 @@ package com.terrencewei.markdown.util;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
+import com.terrencewei.markdown.bean.OSSConfig;
+import com.terrencewei.markdown.bean.OSSConfigQiniu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,36 +17,104 @@ import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.FileInfo;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
-import com.terrencewei.markdown.bean.OSSConfig;
+import com.terrencewei.markdown.bean.OSSObject;
 
 /**
  * Created by terrencewei on 2017/04/17.
+ *
+ * 七牛云
+ * 
+ * https://developer.qiniu.com/kodo/sdk/1239/java
  */
 @Component
-public class QiniuUtils {
-
-    @Autowired
-    private OSSConfig              mOSSConfig;
+public class QiniuUtils extends OSSUtilsImpl {
 
     private static final StringMap PUT_POLICY = new StringMap().put("returnBody",
             "{\"key\":\"$(key)\",\"hash\":\"$(etag)\",\"bucket\":\"$(bucket)\",\"fileSize\":$(fsize)}");
 
+    @Autowired
+    protected OSSConfigQiniu       config;
 
 
-    public String downloadFileFromCloud(String objKey) {
-        return Auth.create(mOSSConfig.getAccessKey(), mOSSConfig.getSecureKey())
-                .privateDownloadUrl(mOSSConfig.getDownloadBaseUrl() + "/" + objKey);
+
+    public QiniuUtils() {
+        super.config = this.config;
     }
 
 
 
-    public QiniuPutResult uploadFile2Cloud(Object inputData, String objectKey) {
+    @Override
+    protected OSSObject putSingle(String pKey, String pContent) {
+        OSSObject output = null;
+
+        QiniuPutResult result = uploadFile2Cloud(pKey, pContent.getBytes());
+        if (result != null) {
+            output = new OSSObject();
+            output.setKey(result.key);
+            output.setHash(result.hash);
+            output.setSize(result.fileSize);
+            output.setBucketName(result.bucket);
+        }
+        return output;
+    }
+
+
+
+    @Override
+    protected OSSObject getSingle(String pKey) {
+        OSSObject output = null;
+        QiniuGetResult result = getFileFromCloud(pKey);
+        if (result != null) {
+            output = new OSSObject();
+
+            output.setKey(result.key);
+            output.setSize(result.fileSize);
+            output.setHash(result.hash);
+            output.setCreatedTime(result.putTime);
+            String downloadURL = downloadFileFromCloud(pKey);
+            output.setUrl(downloadURL);
+            output.setContent(getContentByURL(downloadURL));
+        }
+        return output;
+    }
+
+
+
+    @Override
+    protected OSSObject[] listAll() {
+        OSSObject[] outputs = null;
+        QiniuGetAllResult results = getAllFilesFromCloud();
+        if (results != null && results.results != null && results.results.length > 0) {
+            outputs = new OSSObject[results.results.length];
+            for (int i = 0; i < results.results.length; i++) {
+                OSSObject obj = new OSSObject();
+                QiniuGetResult result = results.results[i];
+                obj.setKey(result.key);
+                obj.setHash(result.hash);
+                obj.setSize(result.fileSize);
+                obj.setCreatedTime(result.putTime);
+
+                outputs[i] = obj;
+            }
+        }
+        return outputs;
+    }
+
+
+
+    private String downloadFileFromCloud(String objKey) {
+        return Auth.create(config.getAccessKey(), config.getSecureKey())
+                .privateDownloadUrl("http://" + config.getEndPoint() + "/" + objKey);
+    }
+
+
+
+    private QiniuPutResult uploadFile2Cloud(String objectKey, Object inputData) {
         UploadManager uploadManager = generateUploadManager();
         // 如果是Windows情况下，格式是 D:\\qiniu\\test.png
         // 默认不指定key的情况下，以文件内容的hash值作为文件名
         String key = objectKey;
-        String upToken = generateUploadToken(mOSSConfig.getBucketName(), mOSSConfig.getAccessKey(),
-                mOSSConfig.getSecureKey(), objectKey);
+        String upToken = generateUploadToken(objectKey);
         try {
             Response response = null;
             if (inputData instanceof String) {
@@ -76,12 +144,12 @@ public class QiniuUtils {
 
 
 
-    public QiniuGetResult getFileFromCloud(String objKey) {
+    private QiniuGetResult getFileFromCloud(String pKey) {
 
         QiniuGetResult result = new QiniuGetResult();
 
         try {
-            FileInfo fileInfo = generateBucketManager().stat(mOSSConfig.getBucketName(), objKey);
+            FileInfo fileInfo = generateBucketManager().stat(config.getBucketName(), pKey);
             result.hash = fileInfo.hash;
             result.fileSize = fileInfo.fsize;
             result.mimeType = fileInfo.mimeType;
@@ -94,10 +162,9 @@ public class QiniuUtils {
 
 
 
-    public QiniuGetAllResult getAllFilesFromCloud() {
+    private QiniuGetAllResult getAllFilesFromCloud() {
 
         QiniuGetAllResult results = new QiniuGetAllResult();
-        results.results = new ArrayList<QiniuGetResult>();
 
         // 文件名前缀
         String prefix = "";
@@ -107,21 +174,24 @@ public class QiniuUtils {
         String delimiter = "";
         // 列举空间文件列表
         BucketManager.FileListIterator fileListIterator = generateBucketManager()
-                .createFileListIterator(mOSSConfig.getBucketName(), prefix, limit, delimiter);
+                .createFileListIterator(config.getBucketName(), prefix, limit, delimiter);
         while (fileListIterator.hasNext()) {
             // 处理获取的file list结果
             FileInfo[] items = fileListIterator.next();
+            if (items != null && items.length > 0) {
+                results.results = new QiniuGetResult[items.length];
+                for (int i = 0; i < items.length; i++) {
+                    QiniuGetResult result = new QiniuGetResult();
+                    FileInfo item = items[i];
+                    result.key = item.key;
+                    result.hash = item.hash;
+                    result.fileSize = item.fsize;
+                    result.mimeType = item.mimeType;
+                    result.putTime = item.putTime;
+                    result.endUser = item.endUser;
 
-            for (FileInfo item : items) {
-                QiniuGetResult result = new QiniuGetResult();
-                result.key = item.key;
-                result.hash = item.hash;
-                result.fileSize = item.fsize;
-                result.mimeType = item.mimeType;
-                result.putTime = item.putTime;
-                result.endUser = item.endUser;
-
-                results.results.add(result);
+                    results.results[i] = result;
+                }
             }
         }
         return results;
@@ -146,16 +216,15 @@ public class QiniuUtils {
 
 
 
-    private String generateUploadToken(String bucket, String accessKey, String secretKey, String objectKey) {
-        return generateAuth(accessKey, secretKey).uploadToken(bucket, objectKey, mOSSConfig.getExpireSeconds(),
-                PUT_POLICY);
+    private String generateUploadToken(String objectKey) {
+        return generateAuth(config.getAccessKey(), config.getSecureKey()).uploadToken(config.getBucketName(), objectKey,
+                config.getExpireSeconds(), PUT_POLICY);
     }
 
 
 
     private BucketManager generateBucketManager() {
-        return new BucketManager(generateAuth(mOSSConfig.getAccessKey(), mOSSConfig.getSecureKey()),
-                generateConfiguration());
+        return new BucketManager(generateAuth(config.getAccessKey(), config.getSecureKey()), generateConfiguration());
     }
 
 
@@ -197,7 +266,7 @@ public class QiniuUtils {
     }
 
     public class QiniuGetAllResult {
-        public List<QiniuGetResult> results;
+        public QiniuGetResult[] results;
 
 
 

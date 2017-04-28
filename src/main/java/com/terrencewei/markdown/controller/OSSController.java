@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.terrencewei.markdown.bean.OSSRequest;
-import com.terrencewei.markdown.bean.OSSResponse;
+import com.terrencewei.markdown.bean.OSSInput;
+import com.terrencewei.markdown.bean.OSSOutput;
 import com.terrencewei.markdown.service.OSSService;
 import com.terrencewei.markdown.util.StringUtils;
 
@@ -24,26 +24,26 @@ public class OSSController {
 
 
 
-    @PostMapping("/save")
+    @PostMapping("/put")
     @ResponseBody
-    public OSSResponse save(@RequestBody OSSRequest pOSSObject) {
-        OSSResponse response = new OSSResponse();
-        if (pOSSObject != null && StringUtils.isNotBlank(pOSSObject.getObjKey()) && pOSSObject.getObjData() != null) {
-            response = mOSSService.save(pOSSObject);
-        }
-        return response;
+    public OSSOutput save(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.put(pOSSObject);
     }
 
 
 
     @PostMapping("/get")
     @ResponseBody
-    public OSSResponse get(@RequestBody OSSRequest pOSSObject) {
-        if (pOSSObject != null && StringUtils.isNotBlank(pOSSObject.getObjKey())) {
-            return mOSSService.get(pOSSObject);
-        } else {
-            return mOSSService.getAll();
-        }
+    public OSSOutput get(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.get(pOSSObject);
+    }
+
+
+
+    @PostMapping("/list")
+    @ResponseBody
+    public OSSOutput list(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.list();
     }
 
 }

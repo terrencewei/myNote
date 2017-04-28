@@ -1,14 +1,16 @@
 package com.terrencewei.markdown.bean;
 
+import java.util.Arrays;
+
 /**
  * Created by terrencewei on 2017/04/21.
  */
-public class OSSResponse {
+public class OSSOutput {
 
-    private boolean success;
-    private String  code;
-    private String  msg;
-    private Object  data;
+    private boolean     success;
+    private String      code;
+    private String      msg;
+    private OSSObject[] objects;
 
 
 
@@ -48,20 +50,21 @@ public class OSSResponse {
 
 
 
-    public Object getData() {
-        return data;
+    public OSSObject[] getObjects() {
+        return objects;
     }
 
 
 
-    public void setData(Object pData) {
-        data = pData;
+    public void setObjects(OSSObject[] pObjects) {
+        objects = pObjects;
     }
 
 
 
     @Override
     public String toString() {
-        return "OSSResponse [" + "success=" + success + ", code=" + code + ", msg=" + msg + ", data=" + data + ']';
+        return "OSSOutput [" + "success=" + success + ", code=" + code + ", msg=" + msg + ", objects="
+                + Arrays.toString(objects) + ']';
     }
 }
