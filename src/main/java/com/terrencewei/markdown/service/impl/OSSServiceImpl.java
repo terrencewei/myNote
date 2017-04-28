@@ -1,6 +1,9 @@
 package com.terrencewei.markdown.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 import com.terrencewei.markdown.bean.OSSInput;
@@ -16,18 +19,15 @@ import com.terrencewei.markdown.util.QiniuUtils;
 public class OSSServiceImpl implements OSSService {
 
     @Autowired
-    private QiniuUtils  mQiniuUtils;
+    private QiniuUtils          mQiniuUtils;
 
     @Autowired
-    private AliyunUtils mAliyunUtils;
+    private AliyunUtils         mAliyunUtils;
 
-    private enum OSSType {
-        Qiniu, Aliyun
-
-    }
-
-    private OSSType currentOSS = OSSType.Qiniu;
-    // private OSSType currentOSS = OSSType.Aliyun;
+    @Value("${ossType}")
+    private String              currentOSS;
+    private static final String QINIU_OSSTYPE  = "qiniu";
+    private static final String ALIYUN_OSSTYPE = "aliyun";
 
 
 
@@ -35,10 +35,10 @@ public class OSSServiceImpl implements OSSService {
     public OSSOutput put(OSSInput pOSSInput) {
         OSSOutput response = new OSSOutput();
         switch (currentOSS) {
-        case Qiniu:
+        case QINIU_OSSTYPE:
             response = mQiniuUtils.put(pOSSInput);
             break;
-        case Aliyun:
+        case ALIYUN_OSSTYPE:
             response = mAliyunUtils.put(pOSSInput);
             break;
 
@@ -52,10 +52,10 @@ public class OSSServiceImpl implements OSSService {
     public OSSOutput get(OSSInput pOSSInput) {
         OSSOutput response = new OSSOutput();
         switch (currentOSS) {
-        case Qiniu:
+        case QINIU_OSSTYPE:
             response = mQiniuUtils.get(pOSSInput);
             break;
-        case Aliyun:
+        case ALIYUN_OSSTYPE:
             response = mAliyunUtils.get(pOSSInput);
             break;
 
@@ -69,10 +69,10 @@ public class OSSServiceImpl implements OSSService {
     public OSSOutput list() {
         OSSOutput response = new OSSOutput();
         switch (currentOSS) {
-        case Qiniu:
+        case QINIU_OSSTYPE:
             response = mQiniuUtils.list(null);
             break;
-        case Aliyun:
+        case ALIYUN_OSSTYPE:
             response = mAliyunUtils.list(null);
             break;
 
