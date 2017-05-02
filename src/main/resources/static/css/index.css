@@ -12,6 +12,14 @@
     border-bottom: none;
 }
 
+#myEditormd .CodeMirror {
+    width: 30% !important;
+}
+
+#myEditormd .editormd-preview {
+    width: 70% !important;
+}
+
 #myEditormd .editormd-preview-close-btn {
     top: inherit;
     right: inherit;
