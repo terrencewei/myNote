@@ -18,27 +18,27 @@ var editorUtils = {
 			currentObjKey: null
 		},
 		fn: {
-			put: function (successFn, objKey, objData) {
-				// to be implements by other module
+			putCloud: function (successFn, objKey, objData) {
+				// put object to cloud
 			},
-			get: function (successFn, objKey) {
-				// to be implements by other module
+			getCloud: function (successFn, objKey) {
+				// get object from cloud
 			},
-			list: function (successFn) {
-				// to be implements by other module
+			listCloud: function (successFn) {
+				// get object list from cloud
 			},
 			putLocal: function (successFn, objKey, objData) {
-				// to be implements by other module
+				// put object to local
 			},
 			getLocal: function (successFn, objKey) {
-				// to be implements by other module
+				// get object from local
 			},
 			listLocal: function (successFn) {
-				// to be implements by other module
+				// get object list from local
 			}
 		}
 	},
-	obj: {
+	oss: {
 		put: function (thisEditormd, objType) {
 			maskUtils.show(true);
 
@@ -52,7 +52,7 @@ var editorUtils = {
 					}[objType]);
 				};
 				var putInvoker = {
-					"oss": editorUtils.shared.fn.put(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown()),
+					"oss": editorUtils.shared.fn.putCloud(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown()),
 					"local": editorUtils.shared.fn.putLocal(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown()),
 				}[objType];
 			} else {
@@ -79,7 +79,7 @@ var editorUtils = {
 									thisEditormd.cm.setValue(ossOutput.objects[0].content);
 								};
 								var getInvoker = {
-									"oss": editorUtils.shared.fn.get(getSuccessFn, object.key),
+									"oss": editorUtils.shared.fn.getCloud(getSuccessFn, object.key),
 									"local": editorUtils.shared.fn.getLocal(getSuccessFn, object.key),
 								}[objType];
 							})
@@ -89,7 +89,7 @@ var editorUtils = {
 				popupUtils.show(thisEditormd);
 			};
 			var listInvoker = {
-				"oss": editorUtils.shared.fn.list(listSuccessFn),
+				"oss": editorUtils.shared.fn.listCloud(listSuccessFn),
 				"local": editorUtils.shared.fn.listLocal(listSuccessFn),
 			}[objType];
 		}
@@ -132,10 +132,10 @@ var editorUtils = {
 			},
 			toolbarHandlers: {
 				ossDownload: function () {
-					editorUtils.obj.list(this, "oss");
+					editorUtils.oss.list(this, "oss");
 				},
 				ossUpload: function () {
-					editorUtils.obj.put(this, "oss");
+					editorUtils.oss.put(this, "oss");
 				},
 				syncCloud2Local: function () {
 					alert("TODO");
@@ -169,10 +169,10 @@ var editorUtils = {
 
 				_this.addKeyMap({
 					"Ctrl-O": function (cm) {
-						editorUtils.obj.list(_this, "oss");
+						editorUtils.oss.list(_this, "oss");
 					},
 					"Ctrl-S": function (cm) {
-						editorUtils.obj.put(_this, "oss");
+						editorUtils.oss.put(_this, "oss");
 					},
 				});
 			}

@@ -15,9 +15,12 @@ var myApp = angular.module('myApp', [])
 				$scope.oss.key = newValue;
 				return newValue;
 			})
-			editorUtils.shared.fn.put = ossService.put;
-			editorUtils.shared.fn.get = ossService.get;
-			editorUtils.shared.fn.list = ossService.list;
+			editorUtils.shared.fn.putCloud = ossService.putCloud;
+			editorUtils.shared.fn.getCloud = ossService.getCloud;
+			editorUtils.shared.fn.listCloud = ossService.listCloud;
+			editorUtils.shared.fn.putLocal = ossService.putLocal;
+			editorUtils.shared.fn.getLocal = ossService.getLocal;
+			editorUtils.shared.fn.listLocal = ossService.listLocal;
 
 			editorUtils.init();
 
@@ -53,8 +56,8 @@ var myApp = angular.module('myApp', [])
 		};
 	}])
 	.service('ossService', ['httpService', function (httpService) {
-		this.put = function (successFn, objKey, objData) {
-			httpService.post("/oss/put", {
+		this.putCloud = function (successFn, objKey, objData) {
+			httpService.post("/oss/put/cloud", {
 					bucketName: "",
 					objects: [
 						{
@@ -69,8 +72,8 @@ var myApp = angular.module('myApp', [])
 					}
 				});
 		};
-		this.get = function (successFn, objKey) {
-			httpService.post("/oss/get", {
+		this.getCloud = function (successFn, objKey) {
+			httpService.post("/oss/get/cloud", {
 					bucketName: "",
 					objects: [
 						{
@@ -84,14 +87,53 @@ var myApp = angular.module('myApp', [])
 					}
 				});
 		};
-		this.list = function (successFn) {
-			httpService.post("/oss/list", {},
+		this.listCloud = function (successFn) {
+			httpService.post("/oss/list/cloud", {},
 				function (response) {
 					if (response.data.success) {
 						successFn(response.data);
 					}
 				});
-		}
+		};
+		this.putLocal = function (successFn, objKey, objData) {
+			httpService.post("/oss/put/local", {
+					bucketName: "",
+					objects: [
+						{
+							key: objKey,
+							content: objData
+						}
+					]
+				},
+				function (response) {
+					if (response.data.success) {
+						successFn(response.data);
+					}
+				});
+		};
+		this.getLocal = function (successFn, objKey) {
+			httpService.post("/oss/get/local", {
+					bucketName: "",
+					objects: [
+						{
+							key: objKey
+						}
+					]
+				},
+				function (response) {
+					if (response.data.success) {
+						successFn(response.data);
+					}
+				});
+		};
+		this.listLocal = function (successFn) {
+			httpService.post("/oss/list/local", {},
+				function (response) {
+					if (response.data.success) {
+						successFn(response.data);
+					}
+				});
+		};
 	}])
 	.service('logService', ['$log', function ($log) {
 		this.debug = function (logMsg) {

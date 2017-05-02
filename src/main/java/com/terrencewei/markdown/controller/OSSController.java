@@ -24,7 +24,7 @@ public class OSSController {
 
 
 
-    @PostMapping("/put")
+    @PostMapping("/put/cloud")
     @ResponseBody
     public OSSOutput save(@RequestBody OSSInput pOSSObject) {
         return mOSSService.put(pOSSObject);
@@ -32,7 +32,7 @@ public class OSSController {
 
 
 
-    @PostMapping("/get")
+    @PostMapping("/get/cloud")
     @ResponseBody
     public OSSOutput get(@RequestBody OSSInput pOSSObject) {
         return mOSSService.get(pOSSObject);
@@ -40,7 +40,7 @@ public class OSSController {
 
 
 
-    @PostMapping("/list")
+    @PostMapping("/list/cloud")
     @ResponseBody
     public OSSOutput list(@RequestBody OSSInput pOSSObject) {
         return mOSSService.list();
