@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.terrencewei.markdown.bean.OSSInput;
 import com.terrencewei.markdown.bean.OSSOutput;
 import com.terrencewei.markdown.service.OSSService;
-import com.terrencewei.markdown.util.StringUtils;
 
 /**
  * Created by terrencewei on 2017/04/21.
@@ -26,24 +25,48 @@ public class OSSController {
 
     @PostMapping("/put/cloud")
     @ResponseBody
-    public OSSOutput save(@RequestBody OSSInput pOSSObject) {
-        return mOSSService.put(pOSSObject);
+    public OSSOutput putCloud(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.putCloud(pOSSObject);
     }
 
 
 
     @PostMapping("/get/cloud")
     @ResponseBody
-    public OSSOutput get(@RequestBody OSSInput pOSSObject) {
-        return mOSSService.get(pOSSObject);
+    public OSSOutput getCloud(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.getCloud(pOSSObject);
     }
 
 
 
     @PostMapping("/list/cloud")
     @ResponseBody
-    public OSSOutput list(@RequestBody OSSInput pOSSObject) {
-        return mOSSService.list();
+    public OSSOutput listCloud(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.listCloud();
+    }
+
+
+
+    @PostMapping("/put/local")
+    @ResponseBody
+    public OSSOutput putLocal(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.putLocal(pOSSObject);
+    }
+
+
+
+    @PostMapping("/get/local")
+    @ResponseBody
+    public OSSOutput getLocal(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.getLocal(pOSSObject);
+    }
+
+
+
+    @PostMapping("/list/local")
+    @ResponseBody
+    public OSSOutput listLocal(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.listLocal();
     }
 
 }

@@ -51,10 +51,14 @@ var editorUtils = {
 						"local": "\" " + ossOutput.objects[0].key + " \" 已保存到本地 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
 					}[objType]);
 				};
-				var putInvoker = {
-					"oss": editorUtils.shared.fn.putCloud(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown()),
-					"local": editorUtils.shared.fn.putLocal(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown()),
-				}[objType];
+				editorUtils.switchInvoker(objType, {
+					"oss": function () {
+						editorUtils.shared.fn.putCloud(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown())
+					},
+					"local": function () {
+						editorUtils.shared.fn.putLocal(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown())
+					},
+				});
 			} else {
 				msgUtils.warn("你还没有选择任何文件");
 				maskUtils.show(false);
@@ -78,20 +82,33 @@ var editorUtils = {
 									editorUtils.shared.data.currentObjKey = object.key;
 									thisEditormd.cm.setValue(ossOutput.objects[0].content);
 								};
-								var getInvoker = {
-									"oss": editorUtils.shared.fn.getCloud(getSuccessFn, object.key),
-									"local": editorUtils.shared.fn.getLocal(getSuccessFn, object.key),
-								}[objType];
+								editorUtils.switchInvoker(objType, {
+									"oss": function () {
+										editorUtils.shared.fn.getCloud(getSuccessFn, object.key)
+									},
+									"local": function () {
+										editorUtils.shared.fn.getLocal(getSuccessFn, object.key)
+									},
+								});
 							})
 					);
 				});
 				popupUtils.update(popupContent, thisEditormd);
 				popupUtils.show(thisEditormd);
 			};
-			var listInvoker = {
-				"oss": editorUtils.shared.fn.listCloud(listSuccessFn),
-				"local": editorUtils.shared.fn.listLocal(listSuccessFn),
-			}[objType];
+			editorUtils.switchInvoker(objType, {
+				"oss": function () {
+					editorUtils.shared.fn.listCloud(listSuccessFn)
+				},
+				"local": function () {
+					editorUtils.shared.fn.listLocal(listSuccessFn)
+				},
+			});
+		}
+	},
+	switchInvoker: function (caseKey, switchFn) {
+		if (switchFn[caseKey]) {
+			switchFn[caseKey]();
 		}
 	},
 	init: function () {
@@ -144,10 +161,10 @@ var editorUtils = {
 					alert("TODO");
 				},
 				openLocal: function () {
-					alert("TODO");
+					editorUtils.oss.list(this, "local");
 				},
 				saveLocal: function () {
-					alert("TODO");
+					editorUtils.oss.put(this, "local");
 				},
 				gotoDevExamples: function (cm, icon, cursor, selection) {
 					window.open(editorUtils.config.devExamplePath);

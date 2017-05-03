@@ -7,14 +7,19 @@ var myApp = angular.module('myApp', [])
 
 			// $scope definition
 			$scope.oss = {
-				key: null
+				key: editorUtils.shared.data.currentObjKey
 			};
 
-			// initialization
+			// bind editorUtils.shared.data.currentObjKey --> Angular $scope.oss.key
 			editorUtils.shared.data.watch("currentObjKey", function (id, oldValue, newValue) {
 				$scope.oss.key = newValue;
 				return newValue;
-			})
+			});
+			// bind Angular $scope.oss.key --> editorUtils.shared.data.currentObjKey
+			$scope.$watch('oss.key', function (newValue, oldValue, scope) {
+				editorUtils.shared.data.currentObjKey = newValue;
+			});
+
 			editorUtils.shared.fn.putCloud = ossService.putCloud;
 			editorUtils.shared.fn.getCloud = ossService.getCloud;
 			editorUtils.shared.fn.listCloud = ossService.listCloud;

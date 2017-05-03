@@ -8,14 +8,26 @@ import com.terrencewei.markdown.bean.OSSOutput;
  */
 public interface OSSService {
 
-    public OSSOutput put(OSSInput pOSSInput);
+    public OSSOutput putCloud(OSSInput pOSSInput);
 
 
 
-    public OSSOutput get(OSSInput pOSSInput);
+    public OSSOutput getCloud(OSSInput pOSSInput);
 
 
 
-    public OSSOutput list();
+    public OSSOutput listCloud();
+
+
+
+    public OSSOutput putLocal(OSSInput pOSSInput);
+
+
+
+    public OSSOutput getLocal(OSSInput pOSSInput);
+
+
+
+    public OSSOutput listLocal();
 
 }

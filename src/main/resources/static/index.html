@@ -44,7 +44,12 @@
 </head>
 <body>
 <div id="myEditormdTocSidebar" ng-controller="editorController">
-    <div>{{ oss.key!=null?"正在编辑: "+oss.key:"未选择云端文件" }}</div>
+    <input type="text"
+           ng-model="oss.key"
+           required
+           ng-required="true"
+    />
+    <div>当前文件: {{ oss.key!=null?oss.key:"无" }}</div>
     <br/>
     <br/>
     <h1>目录</h1>
