@@ -11,10 +11,22 @@ public class OSSObject {
     private String content;
     private String url;
     private String bucketName;
-    public String  hash;
-    public long    size;
-    public long    createdTime;
-    public long    updateTime;
+    private String hash;
+    private long   size;
+    private long   createdTime;
+    private long   updateTime;
+
+
+
+    public OSSObject() {
+    }
+
+
+
+    public OSSObject(String pKey, long pSize) {
+        key = pKey;
+        size = pSize;
+    }
 
 
 

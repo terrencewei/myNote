@@ -27,6 +27,9 @@ var editorUtils = {
 			listCloud: function (successFn) {
 				// get object list from cloud
 			},
+			removeCloud: function (successFn, objKey) {
+				// delete object at Cloud
+			},
 			putLocal: function (successFn, objKey, objData) {
 				// put object to local
 			},
@@ -35,7 +38,10 @@ var editorUtils = {
 			},
 			listLocal: function (successFn) {
 				// get object list from local
-			}
+			},
+			removeLocal: function (successFn, objKey) {
+				// delete object at local
+			},
 		}
 	},
 	oss: {
@@ -53,10 +59,10 @@ var editorUtils = {
 				};
 				editorUtils.switchInvoker(objType, {
 					"oss": function () {
-						editorUtils.shared.fn.putCloud(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown())
+						editorUtils.shared.fn.putCloud(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown());
 					},
 					"local": function () {
-						editorUtils.shared.fn.putLocal(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown())
+						editorUtils.shared.fn.putLocal(successFn, editorUtils.shared.data.currentObjKey, thisEditormd.getMarkdown());
 					},
 				});
 			} else {
@@ -84,10 +90,10 @@ var editorUtils = {
 								};
 								editorUtils.switchInvoker(objType, {
 									"oss": function () {
-										editorUtils.shared.fn.getCloud(getSuccessFn, object.key)
+										editorUtils.shared.fn.getCloud(getSuccessFn, object.key);
 									},
 									"local": function () {
-										editorUtils.shared.fn.getLocal(getSuccessFn, object.key)
+										editorUtils.shared.fn.getLocal(getSuccessFn, object.key);
 									},
 								});
 							})
@@ -96,14 +102,46 @@ var editorUtils = {
 				popupUtils.update(popupContent, thisEditormd);
 				popupUtils.show(thisEditormd);
 			};
+			var listErrorFn = function (ossOutput) {
+				maskUtils.show(false);
+				var popupContent = $('<div class="list-group"></div>')
+					.append('<a class="list-group-item">No files exists.</a>');
+				popupUtils.update(popupContent, thisEditormd);
+				popupUtils.show(thisEditormd);
+			};
 			editorUtils.switchInvoker(objType, {
 				"oss": function () {
-					editorUtils.shared.fn.listCloud(listSuccessFn)
+					editorUtils.shared.fn.listCloud(listSuccessFn, listErrorFn);
 				},
 				"local": function () {
-					editorUtils.shared.fn.listLocal(listSuccessFn)
+					editorUtils.shared.fn.listLocal(listSuccessFn, listErrorFn);
 				},
 			});
+		},
+		remove: function (thisEditormd, objType) {
+			maskUtils.show(true);
+
+			if (editorUtils.shared.data.currentObjKey != null) {
+				// delete object from OSS
+				var successFn = function (ossOutput) {
+					maskUtils.show(false);
+					msgUtils.success({
+						"oss": "\" " + ossOutput.objects[0].key + " \" 已从云端删除 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
+						"local": "\" " + ossOutput.objects[0].key + " \" 已从本地删除 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
+					}[objType]);
+				};
+				editorUtils.switchInvoker(objType, {
+					"oss": function () {
+						editorUtils.shared.fn.removeCloud(successFn, editorUtils.shared.data.currentObjKey)
+					},
+					"local": function () {
+						editorUtils.shared.fn.removeLocal(successFn, editorUtils.shared.data.currentObjKey)
+					},
+				});
+			} else {
+				msgUtils.warn("你还没有选择任何文件");
+				maskUtils.show(false);
+			}
 		}
 	},
 	switchInvoker: function (caseKey, switchFn) {
@@ -124,35 +162,42 @@ var editorUtils = {
 			tocTitle: "目录",
 			toolbar: true,
 			toolbarIcons: function () {
-				return ["ossDownload", "ossUpload", "|", "syncCloud2Local", "syncLocal2Cloud", "|", "openLocal", "saveLocal", "|", "gotoDevExamples"];
+				return ["listCloud", "putCloud", "removeCloud", "|", "syncCloud2Local", "syncLocal2Cloud", "|", "listLocal", "putLocal", "removeLocal", "|", "gotoDevExamples"];
 			},
 			toolbarIconsClass: {
 				// FontAawsome class
-				ossDownload: "fa-cloud-download",
-				ossUpload: "fa-cloud-upload",
+				listCloud: "fa-cloud-download",
+				putCloud: "fa-cloud-upload",
+				removeCloud: "fa-trash",
 				syncCloud2Local: "fa-download",
 				syncLocal2Cloud: "fa-upload",
-				openLocal: "fa-folder-open-o",
-				saveLocal: "fa-floppy-o",
+				listLocal: "fa-folder-open-o",
+				putLocal: "fa-floppy-o",
+				removeLocal: "fa-trash-o",
 				gotoDevExamples: "fa-hand-o-right",
 			},
 			lang: {
 				toolbar: {
-					ossDownload: "打开云端文件",
-					ossUpload: "保存到云端",
+					listCloud: "打开云端文件",
+					putCloud: "保存到云端",
+					removeCloud: "删除云端文件",
 					syncCloud2Local: "下载云端覆盖本地",
 					syncLocal2Cloud: "上传本地覆盖云端",
-					openLocal: "打开本地文件",
-					saveLocal: "保存到本地",
+					listLocal: "打开本地文件",
+					putLocal: "保存到本地",
+					removeLocal: "删除本地文件",
 					gotoDevExamples: "查看Editor.md开发者示例",
 				}
 			},
 			toolbarHandlers: {
-				ossDownload: function () {
+				listCloud: function () {
 					editorUtils.oss.list(this, "oss");
 				},
-				ossUpload: function () {
+				putCloud: function () {
 					editorUtils.oss.put(this, "oss");
+				},
+				removeCloud: function () {
+					editorUtils.oss.remove(this, "oss");
 				},
 				syncCloud2Local: function () {
 					alert("TODO");
@@ -160,11 +205,14 @@ var editorUtils = {
 				syncLocal2Cloud: function () {
 					alert("TODO");
 				},
-				openLocal: function () {
+				listLocal: function () {
 					editorUtils.oss.list(this, "local");
 				},
-				saveLocal: function () {
+				putLocal: function () {
 					editorUtils.oss.put(this, "local");
+				},
+				removeLocal: function () {
+					editorUtils.oss.remove(this, "local");
 				},
 				gotoDevExamples: function (cm, icon, cursor, selection) {
 					window.open(editorUtils.config.devExamplePath);
@@ -186,10 +234,10 @@ var editorUtils = {
 
 				_this.addKeyMap({
 					"Ctrl-O": function (cm) {
-						editorUtils.oss.list(_this, "oss");
+						editorUtils.oss.list(_this, "local");
 					},
 					"Ctrl-S": function (cm) {
-						editorUtils.oss.put(_this, "oss");
+						editorUtils.oss.put(_this, "local");
 					},
 				});
 			}

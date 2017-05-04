@@ -47,6 +47,14 @@ public class OSSController {
 
 
 
+    @PostMapping("/remove/cloud")
+    @ResponseBody
+    public OSSOutput removeCloud(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.removeCloud(pOSSObject);
+    }
+
+
+
     @PostMapping("/put/local")
     @ResponseBody
     public OSSOutput putLocal(@RequestBody OSSInput pOSSObject) {
@@ -67,6 +75,14 @@ public class OSSController {
     @ResponseBody
     public OSSOutput listLocal(@RequestBody OSSInput pOSSObject) {
         return mOSSService.listLocal();
+    }
+
+
+
+    @PostMapping("/remove/local")
+    @ResponseBody
+    public OSSOutput removeLocal(@RequestBody OSSInput pOSSObject) {
+        return mOSSService.removeLocal(pOSSObject);
     }
 
 }

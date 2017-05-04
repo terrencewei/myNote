@@ -23,9 +23,12 @@ var myApp = angular.module('myApp', [])
 			editorUtils.shared.fn.putCloud = ossService.putCloud;
 			editorUtils.shared.fn.getCloud = ossService.getCloud;
 			editorUtils.shared.fn.listCloud = ossService.listCloud;
+			editorUtils.shared.fn.removeCloud = ossService.removeCloud;
+
 			editorUtils.shared.fn.putLocal = ossService.putLocal;
 			editorUtils.shared.fn.getLocal = ossService.getLocal;
 			editorUtils.shared.fn.listLocal = ossService.listLocal;
+			editorUtils.shared.fn.removeLocal = ossService.removeLocal;
 
 			editorUtils.init();
 
@@ -37,7 +40,15 @@ var myApp = angular.module('myApp', [])
 		                      errorFn,
 		                      exceptionFn) {
 			logService.debug("send post request apiurl:" + apiurl + ", apidata:" + JSON.stringify(apidata));
-			$http.post(apiurl, apidata).then(
+			if (globalAppVar.config.angular.usePHPServer) {
+				apidata = $.param(apidata);
+			}
+			$http({
+				method: 'POST',
+				url: apiurl,
+				data: apidata,
+				headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+			}).then(
 				function (response) {
 					logService.debug("receive post success response:" + JSON.stringify(response));
 					if (successFn && typeof(successFn) == "function") {
@@ -61,8 +72,15 @@ var myApp = angular.module('myApp', [])
 		};
 	}])
 	.service('ossService', ['httpService', function (httpService) {
+		var _this = this;
+		this.buildURL = function (url) {
+			if (globalAppVar.config.angular.usePHPServer) {
+				url = "/phpServer" + url + "/server.php";
+			}
+			return url;
+		}
 		this.putCloud = function (successFn, objKey, objData) {
-			httpService.post("/oss/put/cloud", {
+			httpService.post(_this.buildURL("/oss/put/cloud"), {
 					bucketName: "",
 					objects: [
 						{
@@ -78,7 +96,7 @@ var myApp = angular.module('myApp', [])
 				});
 		};
 		this.getCloud = function (successFn, objKey) {
-			httpService.post("/oss/get/cloud", {
+			httpService.post(_this.buildURL("/oss/get/cloud"), {
 					bucketName: "",
 					objects: [
 						{
@@ -92,8 +110,25 @@ var myApp = angular.module('myApp', [])
 					}
 				});
 		};
-		this.listCloud = function (successFn) {
-			httpService.post("/oss/list/cloud", {},
+		this.listCloud = function (successFn, errorFn) {
+			httpService.post(_this.buildURL("/oss/list/cloud"), {},
+				function (response) {
+					if (response.data.success) {
+						successFn(response.data);
+					} else {
+						errorFn(response.data);
+					}
+				});
+		};
+		this.removeCloud = function (successFn, objKey) {
+			httpService.post(_this.buildURL("/oss/remove/cloud"), {
+					bucketName: "",
+					objects: [
+						{
+							key: objKey
+						}
+					]
+				},
 				function (response) {
 					if (response.data.success) {
 						successFn(response.data);
@@ -131,8 +166,25 @@ var myApp = angular.module('myApp', [])
 					}
 				});
 		};
-		this.listLocal = function (successFn) {
+		this.listLocal = function (successFn, errorFn) {
 			httpService.post("/oss/list/local", {},
+				function (response) {
+					if (response.data.success) {
+						successFn(response.data);
+					} else {
+						errorFn(response.data);
+					}
+				});
+		};
+		this.removeLocal = function (successFn, objKey) {
+			httpService.post("/oss/remove/local", {
+					bucketName: "",
+					objects: [
+						{
+							key: objKey
+						}
+					]
+				},
 				function (response) {
 					if (response.data.success) {
 						successFn(response.data);

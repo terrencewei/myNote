@@ -20,6 +20,10 @@ public interface OSSService {
 
 
 
+    public OSSOutput removeCloud(OSSInput pOSSInput);
+
+
+
     public OSSOutput putLocal(OSSInput pOSSInput);
 
 
@@ -29,5 +33,9 @@ public interface OSSService {
 
 
     public OSSOutput listLocal();
+
+
+
+    public OSSOutput removeLocal(OSSInput pOSSInput);
 
 }

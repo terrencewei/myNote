@@ -14,4 +14,5 @@ hs_err_pid*
 # my custom
 .idea
 /target
+src/main/myfolder/php-config/OSSConfig.php
 

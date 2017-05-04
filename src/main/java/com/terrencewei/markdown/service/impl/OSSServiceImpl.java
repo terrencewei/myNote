@@ -1,22 +1,22 @@
 package com.terrencewei.markdown.service.impl;
 
-import com.terrencewei.markdown.bean.OSSObject;
-import com.terrencewei.markdown.dao.OSSDao;
-import com.terrencewei.markdown.model.OSSEntity;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.terrencewei.markdown.bean.OSSInput;
+import com.terrencewei.markdown.bean.OSSObject;
 import com.terrencewei.markdown.bean.OSSOutput;
+import com.terrencewei.markdown.dao.OSSDao;
+import com.terrencewei.markdown.model.OSSEntity;
 import com.terrencewei.markdown.service.OSSService;
 import com.terrencewei.markdown.util.AliyunUtils;
 import com.terrencewei.markdown.util.QiniuUtils;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by terrencewei on 4/21/17.
@@ -92,6 +92,14 @@ public class OSSServiceImpl implements OSSService {
 
 
     @Override
+    public OSSOutput removeCloud(OSSInput pOSSInput) {
+        // TODO:
+        return new OSSOutput();
+    }
+
+
+
+    @Override
     public OSSOutput putLocal(OSSInput pOSSInput) {
         OSSOutput response = new OSSOutput();
         if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
@@ -101,7 +109,8 @@ public class OSSServiceImpl implements OSSService {
             if (mOSSDao.countByKey(entity.getKey()) > 0) {
                 mOSSDao.deleteByKey(entity.getKey());
             }
-            mOSSDao.save(entity);
+            OSSEntity result = mOSSDao.save(entity);
+            response.setObjects(new OSSObject[] { new OSSObject(result.getKey(), result.getSize()) });
             response.setSuccess(true);
         }
         return response;
@@ -115,8 +124,7 @@ public class OSSServiceImpl implements OSSService {
         if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
             String key = pOSSInput.getObjects()[0].getKey();
             if (mOSSDao.countByKey(key) > 0) {
-                OSSObject[] objs = new OSSObject[1];
-                objs[0] = new OSSObject();
+                OSSObject[] objs = new OSSObject[] { new OSSObject() };
                 BeanUtils.copyProperties(mOSSDao.findByKey(key).get(0), objs[0]);
                 response.setObjects(objs);
                 response.setSuccess(true);
@@ -144,5 +152,24 @@ public class OSSServiceImpl implements OSSService {
             }
         }
         return output;
+    }
+
+
+
+    @Override
+    public OSSOutput removeLocal(OSSInput pOSSInput) {
+        OSSOutput response = new OSSOutput();
+        if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
+            List<OSSEntity> deletedEntities = null;
+            if (mOSSDao.countByKey(pOSSInput.getObjects()[0].getKey()) > 0) {
+                deletedEntities = mOSSDao.deleteByKey(pOSSInput.getObjects()[0].getKey());
+                if (!deletedEntities.isEmpty()) {
+                    response.setObjects(new OSSObject[] {
+                            new OSSObject(deletedEntities.get(0).getKey(), deletedEntities.get(0).getSize()) });
+                    response.setSuccess(true);
+                }
+            }
+        }
+        return response;
     }
 }
