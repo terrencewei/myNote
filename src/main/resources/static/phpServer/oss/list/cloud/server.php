@@ -2,6 +2,7 @@
 define('__ROOT__', dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))));
 define('__myfolder__', __ROOT__ . '/myfolder');
 define('__aliyun_OSS_SDK__', __ROOT__ . '/htdocs/static/php/lib/aliyun-oss-php-sdk-2.2.4');
+define('__my_php__', __ROOT__ . '/htdocs/static/php/my');
 
 // -- start --  load oss config
 require_once(__myfolder__ . '/php-config/OSSConfig.php');
@@ -26,18 +27,24 @@ try {
     print $e->getMessage();
 }
 $ossClient->setConnectTimeout($timeout);
-// start business logic
+
 $listObjectInfo = listAllObjects($ossClient, $bucketName);
 
+require_once(__my_php__ . '/autoload.php');
+use com\terrencewei\markdown\bean\OSSOutput;
+use com\terrencewei\markdown\bean\OSSObject;
 
 $ossOutput = new OSSOutput();
+$ossObjects = array();
 foreach ($listObjectInfo as $index => $ObjectInfo) {
     $ossObject = new OSSObject();
-    $ossObject->key = $ObjectInfo->getKey();
-    array_push($ossOutput->objects, $ossObject);
+    $ossObject->setKey($ObjectInfo->getKey());
+    array_push($ossObjects, $ossObject);
 }
-$ossOutput->success = true;
+$ossOutput->setSuccess(true);
+$ossOutput->setObjects($ossObjects);
 echo json_encode($ossOutput);
+/*--------------------------------------------------------------------------*/
 /**
  * 列出Bucket内所有目录和文件， 根据返回的nextMarker循环调用listObjects接口得到所有文件和目录
  *
@@ -76,22 +83,3 @@ function listAllObjects($ossClient, $bucket)
 
 // -- end -- aliyun OSS
 
-class OSSOutput
-{
-    public $success;
-    public $code;
-    public $msg;
-    public $objects = array();
-}
-
-class OSSObject
-{
-    public $key;
-    public $content;
-    public $url;
-    public $bucketName;
-    public $hash;
-    public $size;
-    public $createdTime;
-    public $updateTime;
-}
