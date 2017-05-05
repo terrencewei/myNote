@@ -7,7 +7,8 @@ use terrencewei\Utils\AliyunUtils;
 
 switch ($_POST["phpApiUrl"]) {
     case "/oss/put/cloud":
-        AliyunUtils::put();
+        $objs = $_POST["objects"];
+        AliyunUtils::put($objs[0]["key"], $objs[0]["content"]);
         break;
     case "/oss/get/cloud":
         $objs = $_POST["objects"];

@@ -6,18 +6,33 @@ namespace terrencewei\Utils;
 require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/myfolder/php-my/autoload.php');
 // include aliyun php sdk
 require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/myfolder/php-lib/aliyun-oss-php-sdk-2.2.4/autoload.php');
-use OSS\OssClient;
 use OSS\Core\OssException;
+use OSS\OssClient;
 use terrencewei\Config\OSSConfig;
-use terrencewei\Model\OSSOutput;
 use terrencewei\Model\OSSObject;
+use terrencewei\Model\OSSOutput;
 
 class AliyunUtils
 {
-    public static function put()
+    public static function put($objKey, $objContent)
     {
 
-        echo json_encode("TODO");
+        try {
+            $ossClient = new OssClient(OSSConfig::AK, OSSConfig::SK, OSSConfig::END_POINT);
+        } catch (OssException $e) {
+            print $e->getMessage();
+        }
+        $ossClient->setConnectTimeout(OSSConfig::EXPIRE_SECONDS);
+        AliyunUtils::putObject($objKey, $objContent, $ossClient, OSSConfig::BUCKET_NAME);
+
+        $obj = new OSSObject();
+        $obj->setKey($objKey);
+        $obj->setSize(strlen($objContent));
+        // output
+        $ossOutput = new OSSOutput();
+        $ossOutput->setSuccess(true);
+        $ossOutput->setObjects(array($obj));
+        echo json_encode($ossOutput);
     }
 
     public static function get($objKey)
@@ -61,6 +76,23 @@ class AliyunUtils
         echo json_encode($ossOutput);
     }
 
+    /**
+     * 上传字符串作为object的内容
+     *
+     * @param OssClient $ossClient OSSClient实例
+     * @param string $bucket 存储空间名称
+     * @return null
+     */
+    function putObject($objKey, $objContent, $ossClient, $bucket)
+    {
+        try {
+            $ossClient->putObject($bucket, $objKey, $objContent);
+        } catch (OssException $e) {
+            printf(__FUNCTION__ . ": FAILED\n");
+            printf($e->getMessage() . "\n");
+            return;
+        }
+    }
 
     /**
      * 获取object的内容
