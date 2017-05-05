@@ -3,11 +3,9 @@
 namespace terrencewei\Utils;
 
 // include all my php
-require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/htdocs/php/my/autoload.php');
-// include OSS config
-require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/myfolder/php/my/autoload.php');
+require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/myfolder/php-my/autoload.php');
 // include aliyun php sdk
-require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/htdocs/php/lib/aliyun-oss-php-sdk-2.2.4/autoload.php');
+require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/myfolder/php-lib/aliyun-oss-php-sdk-2.2.4/autoload.php');
 use OSS\OssClient;
 use OSS\Core\OssException;
 use terrencewei\Config\OSSConfig;
@@ -22,10 +20,24 @@ class AliyunUtils
         echo json_encode("TODO");
     }
 
-    public static function get()
+    public static function get($objKey)
     {
+        try {
+            $ossClient = new OssClient(OSSConfig::AK, OSSConfig::SK, OSSConfig::END_POINT);
+        } catch (OssException $e) {
+            print $e->getMessage();
+        }
+        $ossClient->setConnectTimeout(OSSConfig::EXPIRE_SECONDS);
+        $objContent = AliyunUtils::getObject($objKey, $ossClient, OSSConfig::BUCKET_NAME);
 
-        echo json_encode("TODO");
+        $obj = new OSSObject();
+        $obj->setKey($objKey);
+        $obj->setContent($objContent);
+        // output
+        $ossOutput = new OSSOutput();
+        $ossOutput->setSuccess(true);
+        $ossOutput->setObjects(array($obj));
+        echo json_encode($ossOutput);
     }
 
     public static function list_()
@@ -47,6 +59,26 @@ class AliyunUtils
         $ossOutput->setSuccess(true);
         $ossOutput->setObjects($ossObjects);
         echo json_encode($ossOutput);
+    }
+
+
+    /**
+     * 获取object的内容
+     *
+     * @param OssClient $ossClient OSSClient实例
+     * @param string $bucket 存储空间名称
+     * @return null
+     */
+    private static function getObject($objKey, $ossClient, $bucket)
+    {
+        try {
+            $content = $ossClient->getObject($bucket, $objKey);
+        } catch (OssException $e) {
+            printf(__FUNCTION__ . ": FAILED\n");
+            printf($e->getMessage() . "\n");
+            return;
+        }
+        return $content;
     }
 
     /**

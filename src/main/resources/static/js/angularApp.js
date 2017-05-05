@@ -42,7 +42,7 @@ var myApp = angular.module('myApp', [])
 			logService.debug("send post request apiurl:" + apiurl + ", apidata:" + JSON.stringify(apidata));
 			// if is using PHP as server
 			if (globalAppVar.config.angular.usePHPServer) {
-				apidata = $.extend(apidata, {phpServerUrl: apiurl});
+				apidata = $.extend(apidata, {phpApiUrl: apiurl});
 				apidata = $.param(apidata);
 
 				apiurl = "/phpServer/server.php";
@@ -111,7 +111,6 @@ var myApp = angular.module('myApp', [])
 		this.listCloud = function (successFn, errorFn) {
 			httpService.post("/oss/list/cloud", {},
 				function (response) {
-				console.log(response);
 					if (response.data.success) {
 						successFn(response.data);
 					} else {

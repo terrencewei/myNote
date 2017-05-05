@@ -1,16 +1,17 @@
 <?php
 
 // include all my php
-require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/htdocs/php/my/autoload.php');
+require_once(dirname($_SERVER['DOCUMENT_ROOT']) . '/myfolder/php-my/autoload.php');
 
 use terrencewei\Utils\AliyunUtils;
 
-switch ($_POST["phpServerUrl"]) {
+switch ($_POST["phpApiUrl"]) {
     case "/oss/put/cloud":
         AliyunUtils::put();
         break;
     case "/oss/get/cloud":
-        AliyunUtils::get();
+        $objs = $_POST["objects"];
+        AliyunUtils::get($objs[0]["key"]);
         break;
     case "/oss/list/cloud":
         AliyunUtils::list_();
