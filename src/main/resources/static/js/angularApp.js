@@ -41,17 +41,20 @@ var myApp = angular.module('myApp', [])
 		                      exceptionFn) {
 			logService.debug("send post request apiurl:" + apiurl + ", apidata:" + JSON.stringify(apidata));
 			// if is using PHP as server
+			var headers = {'Content-type': 'application/json;charset=UTF-8'};
 			if (globalAppVar.config.angular.usePHPServer) {
 				apidata = $.extend(apidata, {phpApiUrl: apiurl});
 				apidata = $.param(apidata);
 
 				apiurl = "/phpServer/server.php";
+
+				headers = {'Content-Type': 'application/x-www-form-urlencoded'};
 			}
 			$http({
 				method: 'POST',
 				url: apiurl,
 				data: apidata,
-				headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+				headers: headers,
 			}).then(
 				function (response) {
 					logService.debug("receive post success response:" + JSON.stringify(response));
