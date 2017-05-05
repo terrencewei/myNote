@@ -1,6 +1,6 @@
 <?php
 
-namespace com\terrencewei\markdown\bean;
+namespace terrencewei\Model;
 
 class OSSObject implements \JsonSerializable
 {
@@ -12,6 +12,14 @@ class OSSObject implements \JsonSerializable
     private $size;
     private $createdTime;
     private $updateTime;
+
+    /**
+     * OSSObject constructor.
+     */
+    public function __construct()
+    {
+    }
+
 
     public function jsonSerialize()
     {

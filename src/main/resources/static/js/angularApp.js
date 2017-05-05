@@ -40,8 +40,12 @@ var myApp = angular.module('myApp', [])
 		                      errorFn,
 		                      exceptionFn) {
 			logService.debug("send post request apiurl:" + apiurl + ", apidata:" + JSON.stringify(apidata));
+			// if is using PHP as server
 			if (globalAppVar.config.angular.usePHPServer) {
+				apidata = $.extend(apidata, {phpServerUrl: apiurl});
 				apidata = $.param(apidata);
+
+				apiurl = "/phpServer/server.php";
 			}
 			$http({
 				method: 'POST',
@@ -73,14 +77,8 @@ var myApp = angular.module('myApp', [])
 	}])
 	.service('ossService', ['httpService', function (httpService) {
 		var _this = this;
-		this.buildURL = function (url) {
-			if (globalAppVar.config.angular.usePHPServer) {
-				url = "/phpServer" + url + "/server.php";
-			}
-			return url;
-		}
 		this.putCloud = function (successFn, objKey, objData) {
-			httpService.post(_this.buildURL("/oss/put/cloud"), {
+			httpService.post("/oss/put/cloud", {
 					bucketName: "",
 					objects: [
 						{
@@ -96,7 +94,7 @@ var myApp = angular.module('myApp', [])
 				});
 		};
 		this.getCloud = function (successFn, objKey) {
-			httpService.post(_this.buildURL("/oss/get/cloud"), {
+			httpService.post("/oss/get/cloud", {
 					bucketName: "",
 					objects: [
 						{
@@ -111,8 +109,9 @@ var myApp = angular.module('myApp', [])
 				});
 		};
 		this.listCloud = function (successFn, errorFn) {
-			httpService.post(_this.buildURL("/oss/list/cloud"), {},
+			httpService.post("/oss/list/cloud", {},
 				function (response) {
+				console.log(response);
 					if (response.data.success) {
 						successFn(response.data);
 					} else {
@@ -121,7 +120,7 @@ var myApp = angular.module('myApp', [])
 				});
 		};
 		this.removeCloud = function (successFn, objKey) {
-			httpService.post(_this.buildURL("/oss/remove/cloud"), {
+			httpService.post("/oss/remove/cloud", {
 					bucketName: "",
 					objects: [
 						{

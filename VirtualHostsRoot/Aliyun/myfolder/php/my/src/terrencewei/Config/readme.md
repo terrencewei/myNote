@@ -1,0 +1,1 @@
+set OSSConfig.php into this folder

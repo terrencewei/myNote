@@ -1,6 +1,6 @@
 <?php
 
-namespace com\terrencewei\markdown\bean;
+namespace terrencewei\Model;
 
 class OSSOutput implements \JsonSerializable
 {
@@ -8,6 +8,14 @@ class OSSOutput implements \JsonSerializable
     private $code;
     private $msg;
     private $objects = array();
+
+    /**
+     * OSSOutput constructor.
+     */
+    public function __construct()
+    {
+    }
+
 
     public function jsonSerialize()
     {
