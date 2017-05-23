@@ -8,19 +8,24 @@ import java.util.*;
  */
 public class GenerateTOC {
 
+    // config
+    private static final boolean      write_TOC_to_single_file               = false;
+    private static final boolean      create_level_1_TOC_by_single_file_name = true;
+
     // private static final String inputFolderPath =
     // "/home/terrencewei/Downloads/md_input";
-    private static final String       inputFolderPath = "/home/terrencewei/Desktop/开发/";
-    private static final List<String> inputFileNames  = new ArrayList<String>();
+    private static final String       inputFolderPath                        = "/home/terrencewei/Desktop/mynote/";
+    private static final List<String> inputFileNames                         = new ArrayList<String>();
     static {
         inputFileNames.add("ATG.md");
+        inputFileNames.add("docker.md");
         inputFileNames.add("Endeca.md");
         inputFileNames.add("Java.md");
         inputFileNames.add("Linux.md");
         inputFileNames.add("misc.md");
         inputFileNames.add("reactJS.md");
         inputFileNames.add("server.md");
-        inputFileNames.add("SVN and Git.md");
+        inputFileNames.add("SVN_and_Git.md");
         inputFileNames.add("Ubuntu.md");
         inputFileNames.add("Web前端.md");
         inputFileNames.add("云.md");
@@ -30,7 +35,7 @@ public class GenerateTOC {
 
     // private static final String outputFileFolder =
     // "/home/terrencewei/Downloads/md_output/";
-    private static final String outputFileFolder         = "/home/terrencewei/Desktop/开发/";
+    private static final String outputFileFolder         = "/home/terrencewei/Desktop/mynote/";
     private static final String outputAllInOneFileName   = "ALL_IN_ONE.md";
 
     private static final String TOC_start_symbol         = "# 目录";
@@ -90,13 +95,15 @@ public class GenerateTOC {
             });
             for (File file : files) {
                 if (file.isFile() && file.getName().endsWith(".md") && inputFileNames.contains(file.getName())) {
-                    readFile2Cache(file.getPath());
+                    readFile2Cache(file.getPath(), file.getName());
 
                     filesCount++;
                     filesName.add(file.getPath());
 
-                    String singleFilePath = outputFileFolder + file.getName();
-                    writeCache2File(singleFileTOCCache, singleFileContentCache, singleFilePath);
+                    if (write_TOC_to_single_file) {
+                        String singleFilePath = outputFileFolder + file.getName();
+                        writeCache2File(singleFileTOCCache, singleFileContentCache, singleFilePath);
+                    }
                 }
             }
 
@@ -171,7 +178,7 @@ public class GenerateTOC {
 
 
 
-    private static void readFile2Cache(String pFilePath) throws IOException {
+    private static void readFile2Cache(String pFilePath, String pFileName) throws IOException {
         singleFileTOCCache.clear();
         singleFileContentCache.clear();
 
@@ -183,6 +190,9 @@ public class GenerateTOC {
 
         boolean codeBlockStart = false;
 
+        if (create_level_1_TOC_by_single_file_name) {
+            dealWithTOC(1, "# " + pFileName.substring(0, pFileName.indexOf(".md")));
+        }
         while ((lineTxt = bufferedReader.readLine()) != null) {
 
             if (lineTxt.startsWith(TOC_start_symbol)) {

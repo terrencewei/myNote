@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import com.terrencewei.markdown.model.OSSEntity;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.terrencewei.markdown.bean.OSSObject;
 
 /**
  * Created by terrencewei on 3/13/17.
@@ -15,18 +15,18 @@ import org.springframework.transaction.annotation.Transactional;
  * http://docs.spring.io/spring-data/jpa/docs/current/reference/html/
  */
 @Repository
-public interface OSSDao extends CrudRepository<OSSEntity, Long> {
+public interface OSSDao extends CrudRepository<OSSObject, Long> {
 
-    List<OSSEntity> findByKey(String key);
-
-
-
-    @Transactional
-    Long countByKey(String key);
+    List<OSSObject> findByObjKey(String objKey);
 
 
 
     @Transactional
-    List<OSSEntity> deleteByKey(String key);
+    Long countByObjKey(String objKey);
+
+
+
+    @Transactional
+    List<OSSObject> deleteByObjKey(String objKey);
 
 }

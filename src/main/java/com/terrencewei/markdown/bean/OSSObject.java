@@ -1,13 +1,20 @@
 package com.terrencewei.markdown.bean;
 
-import java.util.Arrays;
+import javax.persistence.*;
 
 /**
  * Created by terrencewei on 2017/04/28.
  */
+@Entity
 public class OSSObject {
 
-    private String key;
+    @Id
+    @GeneratedValue
+    private Long   id;
+    private String objKey;
+    @Lob
+    @Column(length = 1048576) // max size is 1MB
+    @Basic(fetch = FetchType.LAZY)
     private String content;
     private String url;
     private String bucketName;
@@ -23,21 +30,21 @@ public class OSSObject {
 
 
 
-    public OSSObject(String pKey, long pSize) {
-        key = pKey;
+    public OSSObject(String pObjKey, long pSize) {
+        objKey = pObjKey;
         size = pSize;
     }
 
 
 
-    public String getKey() {
-        return key;
+    public String getObjKey() {
+        return objKey;
     }
 
 
 
-    public void setKey(String pKey) {
-        key = pKey;
+    public void setObjKey(String pObjKey) {
+        objKey = pObjKey;
     }
 
 
@@ -128,8 +135,8 @@ public class OSSObject {
 
     @Override
     public String toString() {
-        return "OSSObject [" + "key=" + key + ", content=" + content + ", url=" + url + ", bucketName=" + bucketName
-                + ", hash=" + hash + ", size=" + size + ", createdTime=" + createdTime + ", updateTime=" + updateTime
-                + ']';
+        return "OSSObject [" + "id=" + id + ", objKey=" + objKey + ", content=" + content + ", url=" + url
+                + ", bucketName=" + bucketName + ", hash=" + hash + ", size=" + size + ", createdTime=" + createdTime
+                + ", updateTime=" + updateTime + ']';
     }
 }

@@ -13,7 +13,6 @@ import com.terrencewei.markdown.bean.OSSInput;
 import com.terrencewei.markdown.bean.OSSObject;
 import com.terrencewei.markdown.bean.OSSOutput;
 import com.terrencewei.markdown.dao.OSSDao;
-import com.terrencewei.markdown.model.OSSEntity;
 import com.terrencewei.markdown.service.OSSService;
 import com.terrencewei.markdown.util.AliyunUtils;
 import com.terrencewei.markdown.util.QiniuUtils;
@@ -103,14 +102,14 @@ public class OSSServiceImpl implements OSSService {
     public OSSOutput putLocal(OSSInput pOSSInput) {
         OSSOutput response = new OSSOutput();
         if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
-            OSSEntity entity = new OSSEntity();
-            BeanUtils.copyProperties(pOSSInput.getObjects()[0], entity);
-            entity.setUpdateTime(System.currentTimeMillis());
-            if (mOSSDao.countByKey(entity.getKey()) > 0) {
-                mOSSDao.deleteByKey(entity.getKey());
+            OSSObject obj = new OSSObject();
+            BeanUtils.copyProperties(pOSSInput.getObjects()[0], obj);
+            obj.setUpdateTime(System.currentTimeMillis());
+            if (mOSSDao.countByObjKey(obj.getObjKey()) > 0) {
+                mOSSDao.deleteByObjKey(obj.getObjKey());
             }
-            OSSEntity result = mOSSDao.save(entity);
-            response.setObjects(new OSSObject[] { new OSSObject(result.getKey(), result.getSize()) });
+            OSSObject result = mOSSDao.save(obj);
+            response.setObjects(new OSSObject[] { new OSSObject(result.getObjKey(), result.getSize()) });
             response.setSuccess(true);
         }
         return response;
@@ -122,10 +121,10 @@ public class OSSServiceImpl implements OSSService {
     public OSSOutput getLocal(OSSInput pOSSInput) {
         OSSOutput response = new OSSOutput();
         if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
-            String key = pOSSInput.getObjects()[0].getKey();
-            if (mOSSDao.countByKey(key) > 0) {
+            String ObjKey = pOSSInput.getObjects()[0].getObjKey();
+            if (mOSSDao.countByObjKey(ObjKey) > 0) {
                 OSSObject[] objs = new OSSObject[] { new OSSObject() };
-                BeanUtils.copyProperties(mOSSDao.findByKey(key).get(0), objs[0]);
+                BeanUtils.copyProperties(mOSSDao.findByObjKey(ObjKey).get(0), objs[0]);
                 response.setObjects(objs);
                 response.setSuccess(true);
             }
@@ -138,7 +137,7 @@ public class OSSServiceImpl implements OSSService {
     @Override
     public OSSOutput listLocal() {
         OSSOutput output = new OSSOutput();
-        Iterator<OSSEntity> itr = mOSSDao.findAll().iterator();
+        Iterator<OSSObject> itr = mOSSDao.findAll().iterator();
         if (itr != null) {
             List<OSSObject> objs = new ArrayList<OSSObject>();
             while (itr.hasNext()) {
@@ -160,12 +159,12 @@ public class OSSServiceImpl implements OSSService {
     public OSSOutput removeLocal(OSSInput pOSSInput) {
         OSSOutput response = new OSSOutput();
         if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
-            List<OSSEntity> deletedEntities = null;
-            if (mOSSDao.countByKey(pOSSInput.getObjects()[0].getKey()) > 0) {
-                deletedEntities = mOSSDao.deleteByKey(pOSSInput.getObjects()[0].getKey());
+            List<OSSObject> deletedEntities = null;
+            if (mOSSDao.countByObjKey(pOSSInput.getObjects()[0].getObjKey()) > 0) {
+                deletedEntities = mOSSDao.deleteByObjKey(pOSSInput.getObjects()[0].getObjKey());
                 if (!deletedEntities.isEmpty()) {
                     response.setObjects(new OSSObject[] {
-                            new OSSObject(deletedEntities.get(0).getKey(), deletedEntities.get(0).getSize()) });
+                            new OSSObject(deletedEntities.get(0).getObjKey(), deletedEntities.get(0).getSize()) });
                     response.setSuccess(true);
                 }
             }

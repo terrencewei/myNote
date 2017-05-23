@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.aliyun.oss.ClientConfiguration;
 import com.aliyun.oss.OSSClient;
-import com.aliyun.oss.model.Callback;
 import com.aliyun.oss.model.OSSObjectSummary;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.PutObjectResult;
@@ -76,7 +75,7 @@ public class AliyunUtils extends OSSUtilsImpl {
         ossClient.shutdown();
 
         output = new OSSObject();
-        output.setKey(pKey);
+        output.setObjKey(pKey);
         output.setSize(new Long(pContent.getBytes().length).intValue());
         return output;
     }
@@ -132,7 +131,7 @@ public class AliyunUtils extends OSSUtilsImpl {
                 OSSObject obj = new OSSObject();
                 OSSObjectSummary sum = sums.get(i);
 
-                obj.setKey(sum.getKey());
+                obj.setObjKey(sum.getKey());
 
                 outputs[i] = obj;
             }

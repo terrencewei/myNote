@@ -47,10 +47,10 @@ public abstract class OSSUtilsImpl implements OSSUtils {
             if (StringUtils.isNotBlank(pInput.getBucketName())) {
                 config.setBucketName(pInput.getBucketName());
             }
-            if (pInput.getObjects().length == 1 && StringUtils.isNotBlank(pInput.getObjects()[0].getKey())) {
+            if (pInput.getObjects().length == 1 && StringUtils.isNotBlank(pInput.getObjects()[0].getObjKey())) {
                 // put single
                 OSSObject inputObj = pInput.getObjects()[0];
-                OSSObject outputObj = putSingle(inputObj.getKey(), inputObj.getContent());
+                OSSObject outputObj = putSingle(inputObj.getObjKey(), inputObj.getContent());
                 if (outputObj != null) {
                     OSSObject[] objs = new OSSObject[1];
                     objs[0] = outputObj;
@@ -78,10 +78,10 @@ public abstract class OSSUtilsImpl implements OSSUtils {
             if (StringUtils.isNotBlank(pInput.getBucketName())) {
                 config.setBucketName(pInput.getBucketName());
             }
-            if (pInput.getObjects().length == 1 && StringUtils.isNotBlank(pInput.getObjects()[0].getKey())) {
+            if (pInput.getObjects().length == 1 && StringUtils.isNotBlank(pInput.getObjects()[0].getObjKey())) {
                 // get single
                 OSSObject inputObj = pInput.getObjects()[0];
-                OSSObject outputObj = getSingle(inputObj.getKey());
+                OSSObject outputObj = getSingle(inputObj.getObjKey());
 
                 if (outputObj != null) {
                     OSSObject[] objs = new OSSObject[1];

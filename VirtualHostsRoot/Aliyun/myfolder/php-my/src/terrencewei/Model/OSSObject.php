@@ -4,7 +4,7 @@ namespace terrencewei\Model;
 
 class OSSObject implements \JsonSerializable
 {
-    private $key;
+    private $objKey;
     private $content;
     private $url;
     private $bucketName;
@@ -14,32 +14,19 @@ class OSSObject implements \JsonSerializable
     private $updateTime;
 
     /**
-     * OSSObject constructor.
-     */
-    public function __construct()
-    {
-    }
-
-
-    public function jsonSerialize()
-    {
-        return get_object_vars($this);
-    }
-
-    /**
      * @return mixed
      */
-    public function getKey()
+    public function getObjKey()
     {
-        return $this->key;
+        return $this->objKey;
     }
 
     /**
-     * @param mixed $key
+     * @param mixed $objKey
      */
-    public function setKey($key)
+    public function setObjKey($objKey)
     {
-        $this->key = $key;
+        $this->objKey = $objKey;
     }
 
     /**
@@ -154,4 +141,5 @@ class OSSObject implements \JsonSerializable
         $this->updateTime = $updateTime;
     }
 
+    
 }

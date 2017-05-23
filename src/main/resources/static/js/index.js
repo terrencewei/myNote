@@ -2,7 +2,7 @@ var globalAppVar = {
 	config: {
 		angular: {
 			loggingDebug: false,
-			usePHPServer: true,
+			usePHPServer: false,
 		},
 		zIndex: 999999
 	}

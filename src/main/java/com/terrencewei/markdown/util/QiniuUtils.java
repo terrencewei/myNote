@@ -3,8 +3,6 @@ package com.terrencewei.markdown.util;
 import java.io.File;
 import java.io.InputStream;
 
-import com.terrencewei.markdown.bean.OSSConfig;
-import com.terrencewei.markdown.bean.OSSConfigQiniu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +15,7 @@ import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.FileInfo;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
+import com.terrencewei.markdown.bean.OSSConfigQiniu;
 import com.terrencewei.markdown.bean.OSSObject;
 
 /**
@@ -50,7 +49,7 @@ public class QiniuUtils extends OSSUtilsImpl {
         QiniuPutResult result = uploadFile2Cloud(pKey, pContent.getBytes());
         if (result != null) {
             output = new OSSObject();
-            output.setKey(result.key);
+            output.setObjKey(result.key);
             output.setHash(result.hash);
             output.setSize(result.fileSize);
             output.setBucketName(result.bucket);
@@ -67,7 +66,7 @@ public class QiniuUtils extends OSSUtilsImpl {
         if (result != null) {
             output = new OSSObject();
 
-            output.setKey(result.key);
+            output.setObjKey(result.key);
             output.setSize(result.fileSize);
             output.setHash(result.hash);
             output.setCreatedTime(result.putTime);
@@ -89,7 +88,7 @@ public class QiniuUtils extends OSSUtilsImpl {
             for (int i = 0; i < results.results.length; i++) {
                 OSSObject obj = new OSSObject();
                 QiniuGetResult result = results.results[i];
-                obj.setKey(result.key);
+                obj.setObjKey(result.key);
                 obj.setHash(result.hash);
                 obj.setSize(result.fileSize);
                 obj.setCreatedTime(result.putTime);

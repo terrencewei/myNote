@@ -53,8 +53,8 @@ var editorUtils = {
 				var successFn = function (ossOutput) {
 					maskUtils.show(false);
 					msgUtils.success({
-						"oss": "\" " + ossOutput.objects[0].key + " \" 已保存到云端 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
-						"local": "\" " + ossOutput.objects[0].key + " \" 已保存到本地 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
+						"oss": "\" " + ossOutput.objects[0].objKey + " \" 已保存到云端 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
+						"local": "\" " + ossOutput.objects[0].objKey + " \" 已保存到本地 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
 					}[objType]);
 				};
 				editorUtils.switchInvoker(objType, {
@@ -80,20 +80,20 @@ var editorUtils = {
 				// each line content
 				$.each(ossOutput.objects, function (index, object) {
 					popupContent.append(
-						$('<a class="list-group-item">' + object.key + '</a>')
+						$('<a class="list-group-item">' + object.objKey + '</a>')
 							.on("click", function () {
 								// call service to get single file content from OSS
 								var getSuccessFn = function (ossOutput) {
 									popupUtils.close(thisEditormd);
-									editorUtils.shared.data.currentObjKey = object.key;
+									editorUtils.shared.data.currentObjKey = object.objKey;
 									thisEditormd.cm.setValue(ossOutput.objects[0].content);
 								};
 								editorUtils.switchInvoker(objType, {
 									"oss": function () {
-										editorUtils.shared.fn.getCloud(getSuccessFn, object.key);
+										editorUtils.shared.fn.getCloud(getSuccessFn, object.objKey);
 									},
 									"local": function () {
-										editorUtils.shared.fn.getLocal(getSuccessFn, object.key);
+										editorUtils.shared.fn.getLocal(getSuccessFn, object.objKey);
 									},
 								});
 							})
@@ -126,8 +126,8 @@ var editorUtils = {
 				var successFn = function (ossOutput) {
 					maskUtils.show(false);
 					msgUtils.success({
-						"oss": "\" " + ossOutput.objects[0].key + " \" 已从云端删除 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
-						"local": "\" " + ossOutput.objects[0].key + " \" 已从本地删除 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
+						"oss": "\" " + ossOutput.objects[0].objKey + " \" 已从云端删除 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
+						"local": "\" " + ossOutput.objects[0].objKey + " \" 已从本地删除 (" + ((ossOutput.objects[0].size) / 1024).toFixed(2) + "KB)",
 					}[objType]);
 				};
 				editorUtils.switchInvoker(objType, {
