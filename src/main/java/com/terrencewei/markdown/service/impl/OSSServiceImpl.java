@@ -1,6 +1,8 @@
 package com.terrencewei.markdown.service.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -104,6 +106,11 @@ public class OSSServiceImpl implements OSSService {
         if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
             OSSObject obj = new OSSObject();
             BeanUtils.copyProperties(pOSSInput.getObjects()[0], obj);
+            try {
+                obj.setSize(obj.getContent().getBytes("utf-8").length);
+            } catch (UnsupportedEncodingException pE) {
+                pE.printStackTrace();
+            }
             obj.setUpdateTime(System.currentTimeMillis());
             if (mOSSDao.countByObjKey(obj.getObjKey()) > 0) {
                 mOSSDao.deleteByObjKey(obj.getObjKey());
@@ -146,6 +153,7 @@ public class OSSServiceImpl implements OSSService {
                 objs.add(obj);
             }
             if (objs.size() > 0) {
+                Collections.reverse(objs);
                 output.setSuccess(true);
                 output.setObjects(objs.toArray(new OSSObject[objs.size()]));
             }
@@ -160,8 +168,10 @@ public class OSSServiceImpl implements OSSService {
         OSSOutput response = new OSSOutput();
         if (pOSSInput != null && pOSSInput.getObjects() != null && pOSSInput.getObjects().length == 1) {
             List<OSSObject> deletedEntities = null;
-            if (mOSSDao.countByObjKey(pOSSInput.getObjects()[0].getObjKey()) > 0) {
-                deletedEntities = mOSSDao.deleteByObjKey(pOSSInput.getObjects()[0].getObjKey());
+            OSSObject obj = new OSSObject();
+            BeanUtils.copyProperties(pOSSInput.getObjects()[0], obj);
+            if (mOSSDao.countByObjKey(obj.getObjKey()) > 0) {
+                deletedEntities = mOSSDao.deleteByObjKey(obj.getObjKey());
                 if (!deletedEntities.isEmpty()) {
                     response.setObjects(new OSSObject[] {
                             new OSSObject(deletedEntities.get(0).getObjKey(), deletedEntities.get(0).getSize()) });

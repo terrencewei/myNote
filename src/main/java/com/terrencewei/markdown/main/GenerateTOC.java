@@ -1,4 +1,4 @@
-package com.terrencewei.markdown.main;
+package markdown;
 
 import java.io.*;
 import java.util.*;
@@ -8,81 +8,75 @@ import java.util.*;
  */
 public class GenerateTOC {
 
-    // config
-    private static final boolean      write_TOC_to_single_file               = false;
-    private static final boolean      create_level_1_TOC_by_single_file_name = true;
-
-    // private static final String inputFolderPath =
-    // "/home/terrencewei/Downloads/md_input";
-    private static final String       inputFolderPath                        = "/home/terrencewei/Desktop/mynote/";
-    private static final List<String> inputFileNames                         = new ArrayList<String>();
+    // config for input
+    private static final String       CONFIG_inputFolderPath        = "/home/terrencewei/Downloads/md_input";
+    private static final boolean      CONFIG_validateInputFileNames = false;
+    private static final List<String> CONFIG_inputFileNames         = new ArrayList<String>();
     static {
-        inputFileNames.add("ATG.md");
-        inputFileNames.add("docker.md");
-        inputFileNames.add("Endeca.md");
-        inputFileNames.add("Java.md");
-        inputFileNames.add("Linux.md");
-        inputFileNames.add("misc.md");
-        inputFileNames.add("reactJS.md");
-        inputFileNames.add("server.md");
-        inputFileNames.add("SVN_and_Git.md");
-        inputFileNames.add("Ubuntu.md");
-        inputFileNames.add("Web前端.md");
-        inputFileNames.add("云.md");
-        inputFileNames.add("数据库.md");
-        inputFileNames.add("阿里技术栈.md");
+        CONFIG_inputFileNames.add("ATG.md");
+        CONFIG_inputFileNames.add("Endeca.md");
+        CONFIG_inputFileNames.add("Java.md");
+        CONFIG_inputFileNames.add("Linux.md");
+        CONFIG_inputFileNames.add("misc.md");
+        CONFIG_inputFileNames.add("reactJS.md");
+        CONFIG_inputFileNames.add("server.md");
+        CONFIG_inputFileNames.add("SVN and Git.md");
+        CONFIG_inputFileNames.add("Ubuntu.md");
+        CONFIG_inputFileNames.add("Web前端.md");
+        CONFIG_inputFileNames.add("云.md");
+        CONFIG_inputFileNames.add("数据库.md");
+        CONFIG_inputFileNames.add("阿里技术栈.md");
     }
+    // config for output
+    private static final boolean CONFIG_outputSingleFile       = false;
+    private static final boolean CONFIG_outputAllInOneFile     = true;
+    private static final String  CONFIG_outputFileFolder       = "/home/terrencewei/Downloads/md_output/";
+    private static final String  CONFIG_outputAllInOneFileName = "ALL_IN_ONE.md";
 
-    // private static final String outputFileFolder =
-    // "/home/terrencewei/Downloads/md_output/";
-    private static final String outputFileFolder         = "/home/terrencewei/Desktop/mynote/";
-    private static final String outputAllInOneFileName   = "ALL_IN_ONE.md";
+    // auxiliary var
+    private static final String  toc_start_symbol              = "# 目录";
+    private static final String  toc_end_symbol                = "***";
 
-    private static final String TOC_start_symbol         = "# 目录";
-    private static final String TOC_end_symbol           = "***";
-    private static boolean      TOC_start                = false;
+    private static final String  title_level_1                 = "# ";
+    private static final String  title_level_2                 = "## ";
+    private static final String  title_level_3                 = "### ";
+    private static final String  title_level_4                 = "#### ";
+    private static final String  title_level_5                 = "##### ";
 
-    private static final String title_level_1            = "# ";
-    private static final String title_level_2            = "## ";
-    private static final String title_level_3            = "### ";
-    private static final String title_level_4            = "#### ";
-    private static final String title_level_5            = "##### ";
+    private static final String  title_level_1_replace         = "* ";
+    private static final String  title_level_2_replace         = "  * ";
+    private static final String  title_level_3_replace         = "    * ";
+    private static final String  title_level_4_replace         = "      * ";
+    private static final String  title_level_5_replace         = "        * ";
 
-    private static final String title_level_1_replace    = "* ";
-    private static final String title_level_2_replace    = "  * ";
-    private static final String title_level_3_replace    = "    * ";
-    private static final String title_level_4_replace    = "      * ";
-    private static final String title_level_5_replace    = "        * ";
+    private static final String  code_block_symbol             = "```";
 
-    private static final String code_block_symbol        = "```";
-
-    private static List<String> singleFileTOCCache       = new ArrayList<String>();
-    private static List<String> singleFileContentCache   = new ArrayList<String>();
-    private static List<String> allInOneFileTOCCache     = new ArrayList<String>();
-    private static List<String> allInOneFileContentCache = new ArrayList<String>();
-    private static int          level1Count              = 0;
-    private static int          level2Count              = 0;
-    private static int          level3Count              = 0;
-    private static int          level4Count              = 0;
-    private static int          level5Count              = 0;
-    private static boolean      isLevel1Start            = false;
-    private static boolean      isLevel2Start            = false;
-    private static boolean      isLevel3Start            = false;
-    private static boolean      isLevel4Start            = false;
-    private static boolean      isLevel5Start            = false;
+    private static List<String>  singleFileTOCCache            = new ArrayList<String>();
+    private static List<String>  singleFileContentCache        = new ArrayList<String>();
+    private static List<String>  allInOneFileTOCCache          = new ArrayList<String>();
+    private static List<String>  allInOneFileContentCache      = new ArrayList<String>();
+    private static int           level1Count                   = 0;
+    private static int           level2Count                   = 0;
+    private static int           level3Count                   = 0;
+    private static int           level4Count                   = 0;
+    private static int           level5Count                   = 0;
+    private static boolean       isLevel1Start                 = false;
+    private static boolean       isLevel2Start                 = false;
+    private static boolean       isLevel3Start                 = false;
+    private static boolean       isLevel4Start                 = false;
+    private static boolean       isLevel5Start                 = false;
 
 
 
     public static void main(String[] a) {
 
-        allInOneFileTOCCache.clear();
-        allInOneFileContentCache.clear();
+        init();
 
         try {
             int filesCount = 0;
             List<String> filesName = new ArrayList<String>();
 
-            List<File> files = Arrays.asList(new File(inputFolderPath).listFiles());
+            List<File> files = Arrays.asList(new File(CONFIG_inputFolderPath).listFiles());
             Collections.sort(files, new Comparator<File>() {
                 @Override
                 public int compare(File o1, File o2) {
@@ -94,34 +88,67 @@ public class GenerateTOC {
                 }
             });
             for (File file : files) {
-                if (file.isFile() && file.getName().endsWith(".md") && inputFileNames.contains(file.getName())) {
-                    readFile2Cache(file.getPath(), file.getName());
+                if (file.isFile() && file.getName().endsWith(".md")
+                        && (!CONFIG_validateInputFileNames || CONFIG_inputFileNames.contains(file.getName()))) {
+                    readFile2Cache(file);
 
                     filesCount++;
                     filesName.add(file.getPath());
 
-                    if (write_TOC_to_single_file) {
-                        String singleFilePath = outputFileFolder + file.getName();
-                        writeCache2File(singleFileTOCCache, singleFileContentCache, singleFilePath);
-                    }
+                    outputSingleFileWithTOC(file);
                 }
             }
 
-            String allInOneFilePath = outputFileFolder + outputAllInOneFileName;
-            if (writeCache2File(allInOneFileTOCCache, allInOneFileContentCache, allInOneFilePath)) {
-
-                System.out.println("------------------------------");
-                for (String fileName : filesName) {
-                    System.out.println("processed file: " + fileName);
-                }
-
-                System.out.println("ALL FINISHED!!! --> total: " + filesCount + " files");
-                System.out.println("file output to --> " + allInOneFilePath);
-            } else {
-                System.out.println("Input file(s) is empty, no file be output!!!");
-            }
+            outputAllInOneFile(filesCount);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+
+
+    private static void outputAllInOneFile(int pFilesCount) throws IOException {
+        if (CONFIG_outputAllInOneFile) {
+            String allInOneFilePath = CONFIG_outputFileFolder + CONFIG_outputAllInOneFileName;
+            if (writeCache2File(allInOneFileTOCCache, allInOneFileContentCache, allInOneFilePath)) {
+                System.out.println("------------------------------");
+                System.out.println("All in one file output SUCCESS!!! --> total: " + pFilesCount + " files");
+                System.out.println("file output to --> " + allInOneFilePath);
+            } else {
+                System.out.println("all in one file output FAILED!!! --> " + allInOneFilePath);
+            }
+        }
+    }
+
+
+
+    private static void outputSingleFileWithTOC(File file) throws IOException {
+        if (CONFIG_outputSingleFile) {
+            String singleFilePath = CONFIG_outputFileFolder + file.getName();
+            boolean outputSuccess = writeCache2File(singleFileTOCCache, singleFileContentCache, singleFilePath);
+            if (outputSuccess) {
+                System.out.println("Sinle file output SUCCESS!!!");
+                System.out.println("file output to --> " + singleFilePath);
+            } else {
+                System.out.println("Sinle file output FAILED!!! --> " + singleFilePath);
+            }
+        }
+    }
+
+
+
+    private static void init() {
+        // clear the cache
+        allInOneFileTOCCache.clear();
+        allInOneFileContentCache.clear();
+        // make empty dirs
+        File dir = new File(CONFIG_inputFolderPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        dir = new File(CONFIG_outputFileFolder);
+        if (!dir.exists()) {
+            dir.mkdirs();
         }
     }
 
@@ -130,7 +157,10 @@ public class GenerateTOC {
     private static boolean writeCache2File(List<String> fileTOCCache, List<String> fileContentCache, String filePath)
             throws IOException {
 
+        long startTime = System.currentTimeMillis();
+        System.out.println("start process file: " + filePath);
         if (fileTOCCache.isEmpty() || fileContentCache.isEmpty() || filePath == null || filePath.length() <= 0) {
+            System.out.println("end process file: " + filePath + ", total " + getHumanTime(startTime));
             return false;
         }
         OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(new File(filePath)));
@@ -138,14 +168,14 @@ public class GenerateTOC {
 
         // output TOC
         boolean shouldOutoutTOC = false;
-        bufferedWriter.write(TOC_start_symbol);
+        bufferedWriter.write(toc_start_symbol);
         bufferedWriter.newLine();
         for (String TOC : fileTOCCache) {
-            if (TOC.startsWith(TOC_start_symbol)) {
+            if (TOC.startsWith(toc_start_symbol)) {
                 shouldOutoutTOC = true;
                 continue;
             }
-            if (TOC.startsWith(TOC_end_symbol)) {
+            if (TOC.startsWith(toc_end_symbol)) {
                 shouldOutoutTOC = false;
                 continue;
             }
@@ -154,7 +184,7 @@ public class GenerateTOC {
                 bufferedWriter.newLine();
             }
         }
-        bufferedWriter.write(TOC_end_symbol);
+        bufferedWriter.write(toc_end_symbol);
         bufferedWriter.newLine();
 
         // output content
@@ -164,45 +194,70 @@ public class GenerateTOC {
             bufferedWriter.newLine();
         }
 
-        // 1. the BufferedWriter use cache area to store data and when the
-        // cache area is full, it will output the data to the target file
-        // automatically.
-        // 2. finally need call flush method again so the remaining data in
+        // the BufferedWriter use cache area to store data and when the cache area is
+        // full, it will output the data to the target file automatically, so finally
+        // need call 'bufferedWriter.flush()' method again so the remaining data in
         // cache area will be output to the file
         bufferedWriter.flush();
 
         write.close();
 
+        System.out.println("end process file: " + filePath + ", total time: " + getHumanTime(startTime));
         return true;
     }
 
 
 
-    private static void readFile2Cache(String pFilePath, String pFileName) throws IOException {
-        singleFileTOCCache.clear();
-        singleFileContentCache.clear();
+    private static String getHumanTime(long pStartTime) {
+        long endTime = System.currentTimeMillis() - pStartTime;
+        long days = endTime / (1000 * 60 * 60 * 24);
+        long hours = (endTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
+        long minutes = (endTime % (1000 * 60 * 60)) / (1000 * 60);
+        long seconds = (endTime % (1000 * 60)) / 1000;
+        long milliseconds = endTime;
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) {
+            sb.append(days).append(" days ");
+        }
+        if (hours > 0) {
+            sb.append(hours).append(" hours ");
+        }
+        if (minutes > 0) {
+            sb.append(minutes).append(" minutes ");
+        }
+        sb.append((double) seconds + ((double) milliseconds / 1000)).append(" seconds ");
+        return sb.toString();
+    }
 
-        InputStreamReader read = new InputStreamReader(new FileInputStream(new File(pFilePath)));
+
+
+    private static void readFile2Cache(File pFile) throws IOException {
+        updateCache("clear", "single", "toc");
+        updateCache("clear", "single", "content");
+
+        InputStreamReader read = new InputStreamReader(new FileInputStream(new File(pFile.getPath())));
 
         BufferedReader bufferedReader = new BufferedReader(read);
         String lineTxt = null;
-        addToFileTOCCache(TOC_start_symbol);
+        updateCache("add", "single", "toc", toc_start_symbol);
+        updateCache("add", "all", "toc", toc_start_symbol);
 
         boolean codeBlockStart = false;
+        boolean TOCStart = false;
 
-        if (create_level_1_TOC_by_single_file_name) {
-            dealWithTOC(1, "# " + pFileName.substring(0, pFileName.indexOf(".md")));
-        }
+        // use file name as level 1 title
+        dealWithTOC(1, "# " + pFile.getName().substring(0, pFile.getName().indexOf(".md")));
+
         while ((lineTxt = bufferedReader.readLine()) != null) {
 
-            if (lineTxt.startsWith(TOC_start_symbol)) {
-                TOC_start = true;
+            if (lineTxt.startsWith(toc_start_symbol)) {
+                TOCStart = true;
             }
-            if (lineTxt.startsWith(TOC_end_symbol)) {
-                TOC_start = false;
+            if (lineTxt.startsWith(toc_end_symbol)) {
+                TOCStart = false;
                 continue;
             }
-            if (TOC_start) {
+            if (TOCStart) {
                 continue;
             }
 
@@ -222,30 +277,60 @@ public class GenerateTOC {
                 } else if (lineTxt.startsWith(title_level_5)) {
                     dealWithTOC(5, lineTxt);
                 } else {
-                    addToFileContentCache(lineTxt);
+                    updateCache("add", "single", "content", lineTxt);
+                    updateCache("add", "all", "content", lineTxt);
                 }
             } else {
-                addToFileContentCache(lineTxt);
+                updateCache("add", "single", "content", lineTxt);
+                updateCache("add", "all", "content", lineTxt);
             }
 
         }
         read.close();
-        addToFileTOCCache(TOC_end_symbol);
-        addToFileTOCCache("\n");
+        updateCache("add", "single", "toc", toc_end_symbol);
+        updateCache("add", "all", "toc", toc_end_symbol);
+        updateCache("add", "single", "toc", "\n");
+        updateCache("add", "all", "toc", "\n");
     }
 
 
 
-    private static void addToFileTOCCache(String pString) {
-        allInOneFileTOCCache.add(pString);
-        singleFileTOCCache.add(pString);
+    private static void updateCache(String pAction, String pCacheType, String pFileType) {
+        updateCache(pAction, pCacheType, pFileType, null);
     }
 
 
 
-    private static void addToFileContentCache(String pString) {
-        allInOneFileContentCache.add(pString);
-        singleFileContentCache.add(pString);
+    private static void updateCache(String pAction, String pFileType, String pCacheType, String pString) {
+        if (pAction == "add") {
+            if (pFileType == "single" && CONFIG_outputSingleFile) {
+                if (pCacheType == "toc") {
+                    singleFileTOCCache.add(pString);
+                } else if (pCacheType == "content") {
+                    singleFileContentCache.add(pString);
+                }
+            } else if (pFileType == "all" && CONFIG_outputAllInOneFile) {
+                if (pCacheType == "toc") {
+                    allInOneFileTOCCache.add(pString);
+                } else if (pCacheType == "content") {
+                    allInOneFileContentCache.add(pString);
+                }
+            }
+        } else if (pAction == "clear") {
+            if (pFileType == "single" && CONFIG_outputSingleFile) {
+                if (pCacheType == "toc") {
+                    singleFileTOCCache.clear();
+                } else if (pCacheType == "content") {
+                    singleFileContentCache.clear();
+                }
+            } else if (pFileType == "all" && CONFIG_outputAllInOneFile) {
+                if (pCacheType == "toc") {
+                    allInOneFileTOCCache.clear();
+                } else if (pCacheType == "content") {
+                    allInOneFileContentCache.clear();
+                }
+            }
+        }
     }
 
 
@@ -261,16 +346,17 @@ public class GenerateTOC {
         String titleSymbol = "";
         String contentSymbol = "";
 
-        singleFileTOCCache.add(getTitleLevelReplace(level) + "[" + titleSymbol + linkTitle + "](#" + contentSymbol
-                + linkContent + ")");
-        singleFileContentCache.add(lineTxt.replace(getTitleLevel(level), getTitleLevel(level) + titleSymbol));
+        updateCache("add", "single", "toc", getTitleLevelReplace(level) + "[" + titleSymbol + linkTitle + "](#"
+                + contentSymbol + linkContent + ")");
+        updateCache("add", "single", "content",
+                lineTxt.replace(getTitleLevel(level), getTitleLevel(level) + titleSymbol));
 
         titleSymbol = getTitleSymbol(level);
         contentSymbol = getContentSymbol(level);
 
-        allInOneFileTOCCache.add(getTitleLevelReplace(level) + "[" + titleSymbol + linkTitle + "](#" + contentSymbol
-                + linkContent + ")");
-        allInOneFileContentCache.add(lineTxt.replace(getTitleLevel(level), getTitleLevel(level) + titleSymbol));
+        updateCache("add", "all", "toc", getTitleLevelReplace(level) + "[" + titleSymbol + linkTitle + "](#"
+                + contentSymbol + linkContent + ")");
+        updateCache("add", "all", "content", lineTxt.replace(getTitleLevel(level), getTitleLevel(level) + titleSymbol));
 
     }
 
